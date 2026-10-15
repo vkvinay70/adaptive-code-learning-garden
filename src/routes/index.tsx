@@ -243,7 +243,7 @@ function QuizView({ quiz, loading, onStart, onPick, onNext, module }: {
   );
   const done = quiz.picks.length === quiz.qs.length && quiz.idx >= quiz.qs.length - 1 && quiz.picks[quiz.idx] !== undefined;
   const score = quiz.picks.filter((p, i) => p === quiz.qs[i].answerIndex).length;
-  const q = quiz.qs[quiz.idx];
+  const q = quiz.qs[quiz.idx]!;
   const picked = quiz.picks[quiz.idx];
   return (
     <div className="space-y-4">
