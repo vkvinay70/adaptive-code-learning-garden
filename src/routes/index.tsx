@@ -76,7 +76,7 @@ function App() {
     try {
       let reply = await callGemini({ apiKey, system: system(), messages: next });
       const m = reply.match(/VERDICT:\s*(CORRECT|INCORRECT)/i);
-      if (m?.[1]) { const ok = m[1].toUpperCase() === "CORRECT"; record(ok );/*x*/ reply = reply.replace(m[0], ok ? "✅ **Correct!**" : "❌ **Not quite yet.**"); }
+      if (m?.[1]) { const ok = m[1].toUpperCase() === "CORRECT"; if (m?.[1]) { const ok = m[1].toUpperCase() === "CORRECT"; record(ok); reply = reply.replace(m[0], ok ? "✅ **Correct!**" : "❌ **Not quite yet.**"); } = reply.replace(m[0], ok ? "✅ **Correct!**" : "❌ **Not quite yet.**"); }
       setChats((c) => ({ ...c, [chatKey]: [...next, { role: "model", text: reply }] }));
     } catch (e) {
       setError((e as Error).message);
