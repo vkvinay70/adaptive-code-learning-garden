@@ -76,7 +76,7 @@ function App() {
     try {
       let reply = await callGemini({ apiKey, system: system(), messages: next });
       const m = reply.match(/VERDICT:\s*(CORRECT|INCORRECT)/i);
-      if (m) { record(m[1].toUpperCase() === "CORRECT"); reply = reply.replace(m[0], m[1].toUpperCase() === "CORRECT" ? "✅ **Correct!**" : "❌ **Not quite yet.**"); }
+      if (m?.[1]) { const ok = m[1].toUpperCase() === "CORRECT"; record(ok );/*x*/ reply = reply.replace(m[0], ok ? "✅ **Correct!**" : "❌ **Not quite yet.**"); }
       setChats((c) => ({ ...c, [chatKey]: [...next, { role: "model", text: reply }] }));
     } catch (e) {
       setError((e as Error).message);
@@ -100,7 +100,7 @@ function App() {
 
   function pick(i: number) {
     if (!quiz || quiz.picks[quiz.idx] !== undefined) return;
-    record(i === quiz.qs[quiz.idx].answerIndex);
+    record(i === quiz.qs[quiz.idx]?.answerIndex);
     setQuiz({ ...quiz, picks: [...quiz.picks, i] });
   }
 
@@ -242,7 +242,7 @@ function QuizView({ quiz, loading, onStart, onPick, onNext, module }: {
     </div>
   );
   const done = quiz.picks.length === quiz.qs.length && quiz.idx >= quiz.qs.length - 1 && quiz.picks[quiz.idx] !== undefined;
-  const score = quiz.picks.filter((p, i) => p === quiz.qs[i].answerIndex).length;
+  const score = quiz.picks.filter((p, i) => p === quiz.qs[i]?.answerIndex).length;
   const q = quiz.qs[quiz.idx]!;
   const picked = quiz.picks[quiz.idx];
   return (

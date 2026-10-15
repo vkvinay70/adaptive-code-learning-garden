@@ -49,11 +49,10 @@ export function analyze(stats: Stats) {
   const accuracy = attempted ? Math.round((correct / attempted) * 100) : 0;
   let recommended: string = MODULES[0];
   if (weak.length) {
-    recommended = weak.sort(
-      (a, b) => stats[a].correct / stats[a].attempted - stats[b].correct / stats[b].attempted,
-    )[0];
+    const acc = (m: string) => (stats[m]?.correct ?? 0) / (stats[m]?.attempted || 1);
+    recommended = [...weak].sort((a, b) => acc(a) - acc(b))[0] ?? MODULES[0];
   } else {
-    recommended = MODULES.find((m) => !stats[m]?.attempted) ?? MODULES[MODULES.length - 1];
+    recommended = MODULES.find((m) => !stats[m]?.attempted) ?? MODULES[3];
   }
   return { strong, weak, attempted, correct, accuracy, recommended };
 }
