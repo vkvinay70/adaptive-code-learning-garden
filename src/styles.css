@@ -25,6 +25,8 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
   --color-success: var(--success);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
@@ -32,31 +34,53 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-code: var(--code);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 :root {
   --radius: 0.75rem;
-  --background: oklch(0.17 0.02 250);
-  --foreground: oklch(0.95 0.01 90);
-  --card: oklch(0.21 0.025 250);
-  --card-foreground: oklch(0.95 0.01 90);
-  --popover: oklch(0.21 0.025 250);
-  --popover-foreground: oklch(0.95 0.01 90);
-  --primary: oklch(0.86 0.17 92);
-  --primary-foreground: oklch(0.2 0.03 250);
-  --secondary: oklch(0.27 0.03 250);
-  --secondary-foreground: oklch(0.95 0.01 90);
-  --muted: oklch(0.25 0.025 250);
-  --muted-foreground: oklch(0.68 0.03 250);
-  --accent: oklch(0.62 0.13 245);
-  --accent-foreground: oklch(0.98 0 0);
+  /* Deep navy canvas */
+  --background: oklch(0.15 0.025 262);
+  --foreground: oklch(0.96 0.008 250);
+  --card: oklch(0.185 0.03 262);
+  --card-foreground: oklch(0.96 0.008 250);
+  --popover: oklch(0.185 0.03 262);
+  --popover-foreground: oklch(0.96 0.008 250);
+  /* Electric blue accent */
+  --primary: oklch(0.68 0.17 248);
+  --primary-foreground: oklch(0.13 0.02 262);
+  --secondary: oklch(0.23 0.032 262);
+  --secondary-foreground: oklch(0.96 0.008 250);
+  --muted: oklch(0.21 0.03 262);
+  --muted-foreground: oklch(0.7 0.03 255);
+  --accent: oklch(0.26 0.045 250);
+  --accent-foreground: oklch(0.9 0.05 248);
+  /* Golden-yellow highlights */
+  --gold: oklch(0.84 0.15 92);
+  --gold-foreground: oklch(0.2 0.04 92);
   --success: oklch(0.75 0.16 150);
   --destructive: oklch(0.66 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.32 0.03 250);
-  --input: oklch(0.32 0.03 250);
-  --ring: oklch(0.86 0.17 92);
-  --code: oklch(0.13 0.02 250);
+  --border: oklch(0.28 0.03 262);
+  --input: oklch(0.28 0.03 262);
+  --ring: oklch(0.68 0.17 248);
+  --code: oklch(0.12 0.02 262);
+  /* Sidebar */
+  --sidebar: oklch(0.13 0.022 262);
+  --sidebar-foreground: oklch(0.96 0.008 250);
+  --sidebar-primary: oklch(0.68 0.17 248);
+  --sidebar-primary-foreground: oklch(0.13 0.02 262);
+  --sidebar-accent: oklch(0.23 0.032 262);
+  --sidebar-accent-foreground: oklch(0.96 0.008 250);
+  --sidebar-border: oklch(0.26 0.03 262);
+  --sidebar-ring: oklch(0.68 0.17 248);
 }
 
 @layer base {
@@ -65,8 +89,8 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    background-image: radial-gradient(circle at 15% 0%, oklch(0.62 0.13 245 / 0.18), transparent 40%),
-      radial-gradient(circle at 90% 100%, oklch(0.86 0.17 92 / 0.08), transparent 40%);
+    background-image: radial-gradient(circle at 12% 0%, oklch(0.68 0.17 248 / 0.1), transparent 42%),
+      radial-gradient(circle at 92% 100%, oklch(0.84 0.15 92 / 0.05), transparent 42%);
     background-attachment: fixed;
   }
 }
@@ -76,6 +100,6 @@
 .prose-tutor ol { list-style: decimal; }
 .prose-tutor strong { color: var(--primary); }
 .prose-tutor h1, .prose-tutor h2, .prose-tutor h3 { font-weight: 700; margin: 0.75rem 0 0.25rem; }
-.prose-tutor code { font-family: var(--font-mono); font-size: 0.85em; background: var(--code); padding: 0.1rem 0.35rem; border-radius: 0.3rem; color: var(--primary); }
+.prose-tutor code { font-family: var(--font-mono); font-size: 0.85em; background: var(--code); padding: 0.1rem 0.35rem; border-radius: 0.3rem; color: var(--gold); }
 .prose-tutor pre { background: var(--code); border: 1px solid var(--border); border-radius: 0.6rem; padding: 0.85rem; overflow-x: auto; margin: 0.6rem 0; }
 .prose-tutor pre code { background: none; padding: 0; color: var(--foreground); }
