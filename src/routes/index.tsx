@@ -1,515 +1,363 @@
-
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
-  BookOpen,
-  Code2,
-  ClipboardCheck,
-  Send,
-  Lightbulb,
-  Baby,
-  SkipForward,
+  Flame,
   Target,
+  ClipboardCheck,
+  Clock,
   TrendingUp,
   AlertTriangle,
   Compass,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  Terminal,
+  Award,
+  Lock,
+  ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import {
   MODULES,
-  LEVELS,
-  SYSTEM_PROMPT,
-  callGemini,
   analyze,
-  type Mode,
-  type Msg,
+  loadStats,
+  loadName,
+  getStreak,
+  getWeeklyActivity,
+  getTodayCount,
+  DAILY_GOAL,
   type Stats,
 } from "@/lib/tutor";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "PyTutor — AI Python Tutor" },
+      { title: "Dashboard — NaomiLearn" },
       {
         name: "description",
         content:
-          "Learn Python with an adaptive AI tutor: lessons, practice problems and quizzes.",
+          "Your NaomiLearn student dashboard: learning streak, quiz accuracy, module progress and recommended next lessons.",
       },
-      { property: "og:title", content: "PyTutor — AI Python Tutor" },
+      { property: "og:title", content: "Dashboard — NaomiLearn" },
       {
         property: "og:description",
         content:
-          "Learn Python with an adaptive AI tutor: lessons, practice problems and quizzes.",
+          "Track your Python learning streak, accuracy and progress on NaomiLearn.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: App,
+  component: Dashboard,
 });
 
-type QuizQ = {
-  question: string;
-  options: string[];
-  answerIndex: number;
-  explanation: string;
-};
-
-const inputCls =
-  "h-9 rounded-md border border-input bg-secondary px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
-
-function App() {
+function useStudentData() {
   const [name, setName] = useState("");
-  const [module, setModule] = useState<string>(MODULES[0]);
-  const [level, setLevel] = useState<string>(LEVELS[0]);
-  const [mode, setMode] = useState<Mode>("learn");
-  const [chats, setChats] = useState<Record<string, Msg[]>>({});
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [stats, setStats] = useState<Stats>({});
-  const [quiz, setQuiz] = useState<{
-    qs: QuizQ[];
-    idx: number;
-    picks: number[];
-  } | null>(null);
-  const endRef = useRef<HTMLDivElement>(null);
+  const [streak, setStreak] = useState(0);
+  const [week, setWeek] = useState<{ day: string; count: number }[]>([]);
+  const [todayCount, setTodayCount] = useState(0);
 
   useEffect(() => {
-    setName(localStorage.getItem("student_name") ?? "");
-
-    try {
-      setStats(
-        JSON.parse(localStorage.getItem("pytutor_stats") ?? "{}"),
-      );
-    } catch {
-      // Ignore invalid saved progress.
-    }
+    const refresh = () => {
+      setName(loadName());
+      setStats(loadStats());
+      setStreak(getStreak());
+      setWeek(getWeeklyActivity());
+      setTodayCount(getTodayCount());
+    };
+    refresh();
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("pytutor_stats", JSON.stringify(stats));
-  }, [stats]);
+  return { name, stats, streak, week, todayCount };
+}
 
-  useEffect(() => {
-    localStorage.setItem("student_name", name);
-  }, [name]);
-
-  const chatKey = `${mode}|${module}`;
-  const messages = chats[chatKey] ?? [];
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, loading, quiz?.idx]);
-
-  const record = (correct: boolean) =>
-    setStats((s) => {
-      const cur = s[module] ?? { attempted: 0, correct: 0 };
-
-      return {
-        ...s,
-        [module]: {
-          attempted: cur.attempted + 1,
-          correct: cur.correct + (correct ? 1 : 0),
-        },
-      };
-    });
-
-  const system = () =>
-    `${SYSTEM_PROMPT}\n\nStudent: ${name || "Student"}. Module: ${module}. Difficulty: ${level}. Current mode: ${mode === "learn" ? "Learn Mode" : mode === "practice" ? "Practice Mode" : "Quiz Mode"}.` +
-    (mode === "practice"
-      ? "\nWhen you give a challenge, describe it clearly and wait for code. When the student submits code to solve a challenge, evaluate it and end your reply with exactly one line: VERDICT: CORRECT or VERDICT: INCORRECT. Give hints, not the full solution, unless asked twice."
-      : "") +
-    "\nKeep responses concise and use markdown with ```python code blocks.";
-
-  async function send(text: string) {
-    if (!text.trim() || loading) return;
-
-    const next = [...messages, { role: "user" as const, text }];
-
-    setChats((c) => ({ ...c, [chatKey]: next }));
-    setInput("");
-    setError("");
-    setLoading(true);
-
-    try {
-      let reply = await callGemini({
-        system: system(),
-        messages: next,
-      });
-
-      const m = reply.match(/VERDICT:\s*(CORRECT|INCORRECT)/i);
-
-      if (m?.[1]) {
-        const ok = m[1].toUpperCase() === "CORRECT";
-        record(ok);
-        reply = reply.replace(
-          m[0],
-          ok ? "✅ **Correct!**" : "❌ **Not quite yet.**",
-        );
-      }
-
-      setChats((c) => ({
-        ...c,
-        [chatKey]: [...next, { role: "model", text: reply }],
-      }));
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Unable to get an AI response.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function startQuiz() {
-    if (loading) return;
-
-    setLoading(true);
-    setError("");
-    setQuiz(null);
-
-    try {
-      const raw = await callGemini({
-        system: system(),
-        json: true,
-        messages: [
-          {
-            role: "user",
-            text: `Create 3 multiple-choice Python questions on "${module}" at ${level} level. Return JSON: {"questions":[{"question":"string, may include markdown code","options":["four options"],"answerIndex":0,"explanation":"string"}]}`,
-          },
-        ],
-      });
-
-      const parsed = JSON.parse(raw);
-      const questions = parsed.questions;
-
-      if (
-        !Array.isArray(questions) ||
-        questions.length < 3 ||
-        questions.slice(0, 3).some(
-          (q: QuizQ) =>
-            typeof q.question !== "string" ||
-            !Array.isArray(q.options) ||
-            q.options.length !== 4 ||
-            !Number.isInteger(q.answerIndex) ||
-            q.answerIndex < 0 ||
-            q.answerIndex > 3 ||
-            typeof q.explanation !== "string",
-        )
-      ) {
-        throw new Error("The AI returned an invalid quiz. Please try again.");
-      }
-
-      setQuiz({
-        qs: questions.slice(0, 3),
-        idx: 0,
-        picks: [],
-      });
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Unable to generate the quiz.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function pick(i: number) {
-    if (!quiz || quiz.picks[quiz.idx] !== undefined) return;
-
-    record(i === quiz.qs[quiz.idx]?.answerIndex);
-    setQuiz({ ...quiz, picks: [...quiz.picks, i] });
-  }
-
+function Dashboard() {
+  const { name, stats, streak, week, todayCount } = useStudentData();
   const a = analyze(stats);
+  const hasActivity = a.attempted > 0;
+  const weekTotal = week.reduce((s, d) => s + d.count, 0);
+  const weekMax = Math.max(1, ...week.map((d) => d.count));
+  const goalPct = Math.min(100, Math.round((todayCount / DAILY_GOAL) * 100));
 
-  const tabs: { id: Mode; label: string; icon: typeof BookOpen }[] = [
-    { id: "learn", label: "Learn", icon: BookOpen },
-    { id: "practice", label: "Practice", icon: Code2 },
-    { id: "quiz", label: "Quiz", icon: ClipboardCheck },
+  const achievements = [
+    {
+      title: "First Steps",
+      desc: "Answer your first question",
+      unlocked: a.attempted >= 1,
+    },
+    {
+      title: "Getting Consistent",
+      desc: "Answer 10 questions",
+      unlocked: a.attempted >= 10,
+    },
+    {
+      title: "Sharp Shooter",
+      desc: "Reach 80% accuracy with 5+ answers",
+      unlocked: a.attempted >= 5 && a.accuracy >= 80,
+    },
+    {
+      title: "Well Rounded",
+      desc: "Try all four modules",
+      unlocked: MODULES.every((m) => (stats[m]?.attempted ?? 0) > 0),
+    },
+    {
+      title: "On a Roll",
+      desc: "Keep a 3-day learning streak",
+      unlocked: streak >= 3,
+    },
   ];
 
-  const starter =
-    mode === "learn"
-      ? `Teach me ${module}`
-      : `Give me a ${level.toLowerCase()} practice problem on ${module}`;
-
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
-          <div className="mr-auto flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <Terminal className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="font-bold leading-tight">PyTutor</div>
-              <div className="font-mono text-[10px] text-muted-foreground">
-                personalized learning assistant
-              </div>
-            </div>
+    <div className="mx-auto max-w-6xl space-y-6 px-4 py-6">
+      {/* Welcome */}
+      <section className="rounded-xl border border-border bg-card p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Welcome to NaomiLearn{name ? `, ${name}` : ""}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Learn Python. Master AI. Build Your Future.
+            </p>
           </div>
-
-          <input
-            className={`${inputCls} w-40`}
-            placeholder="Your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-
-          <select
-            className={inputCls}
-            value={module}
-            onChange={(e) => {
-              setModule(e.target.value);
-              setQuiz(null);
-            }}
+          <Link
+            to="/tutor"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
-            {MODULES.map((m) => (
-              <option key={m}>{m}</option>
-            ))}
-          </select>
-
-          <select
-            className={inputCls}
-            value={level}
-            onChange={(e) => setLevel(e.target.value)}
-          >
-            {LEVELS.map((l) => (
-              <option key={l}>{l}</option>
-            ))}
-          </select>
+            <Sparkles className="h-4 w-4" />
+            Open AI Tutor
+          </Link>
         </div>
-      </header>
 
-      <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[1fr_300px]">
-        <section className="flex min-h-[70vh] flex-col rounded-xl border border-border bg-card">
-          <div className="flex gap-1 border-b border-border p-2">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setMode(t.id)}
-                className={`inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition ${
-                  mode === t.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-secondary"
-                }`}
-              >
-                <t.icon className="h-4 w-4" />
-                {t.label}
-              </button>
-            ))}
-
-            <span className="ml-auto self-center pr-2 font-mono text-xs text-muted-foreground">
-              {module} · {level}
+        {/* Daily goal */}
+        <div className="mt-5 rounded-lg border border-border bg-secondary/50 p-4">
+          <div className="flex items-center justify-between text-sm">
+            <span className="flex items-center gap-2 font-medium">
+              <Target className="h-4 w-4 text-gold" />
+              Daily goal: {DAILY_GOAL} questions
+            </span>
+            <span className="font-mono text-xs text-muted-foreground">
+              {todayCount}/{DAILY_GOAL} today
             </span>
           </div>
-
-          <div className="flex-1 space-y-4 overflow-y-auto p-5">
-            {mode !== "quiz" ? (
-              <>
-                {messages.length === 0 && (
-                  <div className="py-12 text-center">
-                    <h2 className="text-2xl font-bold">
-                      Hi{name ? `, ${name}` : ""} 👋
-                    </h2>
-                    <p className="mt-2 text-muted-foreground">
-                      {mode === "learn"
-                        ? "Ask anything, or start with a lesson."
-                        : "Solve challenges — I'll hint, not spoil."}
-                    </p>
-                    <button
-                      onClick={() => send(starter)}
-                      disabled={loading}
-                      className="mt-5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-                    >
-                      {starter}
-                    </button>
-                  </div>
-                )}
-
-                {messages.map((m, i) => (
-                  <div
-                    key={i}
-                    className={m.role === "user" ? "flex justify-end" : ""}
-                  >
-                    {m.role === "user" ? (
-                      <div className="max-w-[80%] whitespace-pre-wrap rounded-xl bg-accent px-4 py-2 font-mono text-sm text-accent-foreground">
-                        {m.text}
-                      </div>
-                    ) : (
-                      <div className="prose-tutor text-sm">
-                        <ReactMarkdown>{m.text}</ReactMarkdown>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </>
-            ) : (
-              <QuizView
-                quiz={quiz}
-                loading={loading}
-                onStart={startQuiz}
-                onPick={pick}
-                onNext={() =>
-                  quiz && setQuiz({ ...quiz, idx: quiz.idx + 1 })
-                }
-                module={module}
-              />
-            )}
-
-            {loading && mode !== "quiz" && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                PyTutor is thinking…
-              </div>
-            )}
-
-            {error && (
-              <div className="rounded-md border border-destructive px-3 py-2 text-sm text-destructive">
-                {error}
-              </div>
-            )}
-
-            <div ref={endRef} />
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full bg-gold transition-all"
+              style={{ width: `${goalPct}%` }}
+            />
           </div>
+          {todayCount === 0 && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Answer a question in the AI Tutor to start today's progress.
+            </p>
+          )}
+        </div>
+      </section>
 
-          {mode !== "quiz" && (
-            <div className="border-t border-border p-3">
-              <div className="flex gap-2">
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  rows={mode === "practice" ? 4 : 2}
-                  onKeyDown={(e) => {
-                    if (
-                      e.key === "Enter" &&
-                      (e.metaKey ||
-                        e.ctrlKey ||
-                        (mode === "learn" && !e.shiftKey))
-                    ) {
-                      e.preventDefault();
-                      send(input);
-                    }
-                  }}
-                  placeholder={
-                    mode === "practice"
-                      ? "Paste your Python code here… (Ctrl+Enter to submit)"
-                      : "Ask PyTutor a question…"
-                  }
-                  className="flex-1 resize-none rounded-md border border-input bg-code p-3 font-mono text-sm outline-none focus:ring-2 focus:ring-ring"
-                />
+      {/* Stat cards */}
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          icon={Flame}
+          label="Learning streak"
+          value={streak > 0 ? `${streak} day${streak > 1 ? "s" : ""}` : "—"}
+          hint={streak > 0 ? "Keep it going!" : "Learn today to start a streak"}
+          tone="text-gold"
+        />
+        <StatCard
+          icon={ClipboardCheck}
+          label="Questions attempted"
+          value={String(a.attempted)}
+          hint={hasActivity ? `${a.correct} correct` : "No questions yet"}
+          tone="text-primary"
+        />
+        <StatCard
+          icon={TrendingUp}
+          label="Quiz accuracy"
+          value={hasActivity ? `${a.accuracy}%` : "—"}
+          hint={hasActivity ? "Across all modules" : "Take a quiz to measure"}
+          tone="text-success"
+        />
+        <StatCard
+          icon={Clock}
+          label="Study time"
+          value="—"
+          hint="Study time tracking is coming soon"
+          tone="text-muted-foreground"
+        />
+      </section>
 
-                <button
-                  onClick={() => send(input)}
-                  disabled={loading}
-                  className="grid w-12 place-items-center rounded-md bg-primary text-primary-foreground disabled:opacity-50"
-                  aria-label="Send message"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="mt-2 flex flex-wrap gap-2">
-                {[
-                  { t: "Give me a hint", i: Lightbulb },
-                  { t: "Explain simpler", i: Baby },
-                  { t: "Next topic", i: SkipForward },
-                ].map((q) => (
-                  <button
-                    key={q.t}
-                    onClick={() => send(q.t)}
-                    disabled={loading}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-50"
-                  >
-                    <q.i className="h-3.5 w-3.5" />
-                    {q.t}
-                  </button>
-                ))}
-              </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Weekly activity */}
+        <section className="rounded-xl border border-border bg-card p-5">
+          <h2 className="text-sm font-semibold">Weekly activity</h2>
+          {weekTotal === 0 ? (
+            <p className="mt-4 rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+              No activity this week yet. Your daily answered questions will
+              chart here once you start learning.
+            </p>
+          ) : (
+            <div className="mt-4 flex h-32 items-end gap-2">
+              {week.map((d, i) => (
+                <div key={i} className="flex flex-1 flex-col items-center gap-1">
+                  <div
+                    className="w-full rounded-t bg-primary/80"
+                    style={{ height: `${Math.max(4, (d.count / weekMax) * 100)}%` }}
+                    title={`${d.count} questions`}
+                  />
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    {d.day}
+                  </span>
+                </div>
+              ))}
             </div>
           )}
         </section>
 
-        <aside className="space-y-4">
-          <div className="rounded-xl border border-border bg-card p-4">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-              <Target className="h-4 w-4 text-primary" />
-              Progress
-            </h3>
-
-            <div className="grid grid-cols-3 gap-2 text-center">
-              {[
-                ["Attempted", a.attempted],
-                ["Score", a.correct],
-                ["Accuracy", `${a.accuracy}%`],
-              ].map(([l, v]) => (
-                <div key={l} className="rounded-md bg-secondary p-2">
-                  <div className="font-mono text-lg font-bold text-primary">
-                    {v}
+        {/* Module progress */}
+        <section className="rounded-xl border border-border bg-card p-5">
+          <h2 className="text-sm font-semibold">Module progress</h2>
+          <div className="mt-4 space-y-3">
+            {MODULES.map((m) => {
+              const s = stats[m];
+              const pct = s?.attempted
+                ? Math.round((s.correct / s.attempted) * 100)
+                : 0;
+              return (
+                <div key={m}>
+                  <div className="flex justify-between text-xs">
+                    <span>{m}</span>
+                    <span className="font-mono text-muted-foreground">
+                      {s?.attempted ? `${s.correct}/${s.attempted} · ${pct}%` : "not started"}
+                    </span>
                   </div>
-                  <div className="text-[10px] uppercase text-muted-foreground">
-                    {l}
+                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={`h-full transition-all ${s?.attempted ? "bg-primary" : ""}`}
+                      style={{ width: `${pct}%` }}
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
+          </div>
+        </section>
+      </div>
 
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary">
-              <div
-                className="h-full bg-primary transition-all"
-                style={{ width: `${a.accuracy}%` }}
-              />
-            </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Continue learning + recommended */}
+        <section className="space-y-6">
+          <div className="rounded-xl border border-primary/40 bg-card p-5">
+            <h2 className="flex items-center gap-2 text-sm font-semibold">
+              <Compass className="h-4 w-4 text-primary" />
+              Recommended next lesson
+            </h2>
+            <p className="mt-2 text-lg font-bold">{a.recommended}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {a.weak.includes(a.recommended)
+                ? "This is your weakest area — a quick review will help."
+                : "The next module you haven't explored yet."}
+            </p>
+            <Link
+              to="/tutor"
+              className="mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+            >
+              Continue learning
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
 
-          <List
-            title="Strong Areas"
+          {/* Recent quiz attempts */}
+          <div className="rounded-xl border border-border bg-card p-5">
+            <h2 className="flex items-center gap-2 text-sm font-semibold">
+              <ClipboardCheck className="h-4 w-4 text-primary" />
+              Recent quiz attempts
+            </h2>
+            <p className="mt-4 rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+              No quiz history yet. Your scores will appear here after your
+              first quiz in the AI Tutor.
+            </p>
+          </div>
+        </section>
+
+        {/* Achievements */}
+        <section className="rounded-xl border border-border bg-card p-5">
+          <h2 className="flex items-center gap-2 text-sm font-semibold">
+            <Award className="h-4 w-4 text-gold" />
+            Achievements
+          </h2>
+          <ul className="mt-4 space-y-3">
+            {achievements.map((ach) => (
+              <li
+                key={ach.title}
+                className={`flex items-start gap-3 rounded-lg border p-3 ${
+                  ach.unlocked
+                    ? "border-gold/40 bg-gold/5"
+                    : "border-border opacity-60"
+                }`}
+              >
+                {ach.unlocked ? (
+                  <Award className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                ) : (
+                  <Lock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                )}
+                <div>
+                  <div className="text-sm font-medium">{ach.title}</div>
+                  <div className="text-xs text-muted-foreground">{ach.desc}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+
+      {/* Strengths / weaknesses */}
+      {hasActivity && (
+        <section className="grid gap-6 sm:grid-cols-2">
+          <MiniList
+            title="Strong areas"
             icon={TrendingUp}
             items={a.strong}
             tone="text-success"
-            empty="Answer questions to discover strengths"
+            empty="Answer more questions to reveal strengths"
           />
-
-          <List
-            title="Needs Practice"
+          <MiniList
+            title="Needs practice"
             icon={AlertTriangle}
             items={a.weak}
             tone="text-destructive"
-            empty="Nothing flagged yet"
+            empty="Nothing flagged — nice work"
           />
-
-          <div className="rounded-xl border border-primary/40 bg-card p-4">
-            <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold">
-              <Compass className="h-4 w-4 text-primary" />
-              Recommended Next Lesson
-            </h3>
-
-            <p className="font-semibold">{a.recommended}</p>
-
-            <button
-              onClick={() => {
-                setModule(a.recommended);
-                setMode("learn");
-                setQuiz(null);
-              }}
-              className="mt-3 w-full rounded-md bg-primary py-2 text-sm font-semibold text-primary-foreground"
-            >
-              Start lesson
-            </button>
-          </div>
-        </aside>
-      </main>
+        </section>
+      )}
     </div>
   );
 }
 
-function List({
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  icon: typeof Flame;
+  label: string;
+  value: string;
+  hint: string;
+  tone: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Icon className={`h-4 w-4 ${tone}`} />
+        {label}
+      </div>
+      <div className="mt-2 text-2xl font-bold tracking-tight">{value}</div>
+      <div className="mt-1 text-xs text-muted-foreground">{hint}</div>
+    </div>
+  );
+}
+
+function MiniList({
   title,
   icon: Icon,
   items,
@@ -523,12 +371,11 @@ function List({
   empty: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className="rounded-xl border border-border bg-card p-5">
       <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold">
         <Icon className={`h-4 w-4 ${tone}`} />
         {title}
       </h3>
-
       {items.length ? (
         <ul className="space-y-1 text-sm">
           {items.map((i) => (
@@ -540,157 +387,6 @@ function List({
         </ul>
       ) : (
         <p className="text-xs text-muted-foreground">{empty}</p>
-      )}
-    </div>
-  );
-}
-
-function QuizView({
-  quiz,
-  loading,
-  onStart,
-  onPick,
-  onNext,
-  module,
-}: {
-  quiz: { qs: QuizQ[]; idx: number; picks: number[] } | null;
-  loading: boolean;
-  module: string;
-  onStart: () => void;
-  onPick: (i: number) => void;
-  onNext: () => void;
-}) {
-  if (loading)
-    return (
-      <div className="flex items-center justify-center gap-2 py-20 text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin" />
-        Generating your quiz…
-      </div>
-    );
-
-  if (!quiz)
-    return (
-      <div className="py-16 text-center">
-        <ClipboardCheck className="mx-auto h-10 w-10 text-primary" />
-        <h2 className="mt-3 text-2xl font-bold">
-          3-question quiz on {module}
-        </h2>
-        <button
-          onClick={onStart}
-          className="mt-5 rounded-md bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
-        >
-          Start quiz
-        </button>
-      </div>
-    );
-
-  const done =
-    quiz.picks.length === quiz.qs.length &&
-    quiz.idx >= quiz.qs.length - 1 &&
-    quiz.picks[quiz.idx] !== undefined;
-
-  const score = quiz.picks.filter(
-    (p, i) => p === quiz.qs[i]?.answerIndex,
-  ).length;
-
-  const q = quiz.qs[quiz.idx]!;
-  const picked = quiz.picks[quiz.idx];
-
-  return (
-    <div className="space-y-4">
-      <div className="flex gap-1">
-        {quiz.qs.map((_, i) => (
-          <div
-            key={i}
-            className={`h-1.5 flex-1 rounded-full ${
-              i <= quiz.idx ? "bg-primary" : "bg-secondary"
-            }`}
-          />
-        ))}
-      </div>
-
-      <div className="font-mono text-xs text-muted-foreground">
-        Question {quiz.idx + 1} of {quiz.qs.length}
-      </div>
-
-      <div className="prose-tutor text-base font-medium">
-        <ReactMarkdown>{q.question}</ReactMarkdown>
-      </div>
-
-      <div className="grid gap-2">
-        {q.options.map((o, i) => {
-          const state =
-            picked === undefined
-              ? "border-border hover:border-primary"
-              : i === q.answerIndex
-                ? "border-success text-success"
-                : i === picked
-                  ? "border-destructive text-destructive"
-                  : "border-border opacity-60";
-
-          return (
-            <button
-              key={i}
-              onClick={() => onPick(i)}
-              className={`rounded-md border px-4 py-3 text-left font-mono text-sm transition ${state}`}
-            >
-              {String.fromCharCode(65 + i)}. {o}
-            </button>
-          );
-        })}
-      </div>
-
-      {picked !== undefined && (
-        <div className="rounded-md bg-secondary p-3 text-sm">
-          <div className="mb-1 font-semibold">
-            {picked === q.answerIndex ? "✅ Correct!" : "❌ Incorrect"}
-          </div>
-          <div className="prose-tutor">
-            <ReactMarkdown>{q.explanation}</ReactMarkdown>
-          </div>
-        </div>
-      )}
-
-      {picked !== undefined && !done && (
-        <button
-          onClick={onNext}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-        >
-          Next question
-        </button>
-      )}
-
-      {done && (
-        <div className="rounded-xl border border-primary/40 p-4">
-          <h3 className="text-lg font-bold">
-            Score: {score}/{quiz.qs.length}
-          </h3>
-
-          <ul className="mt-2 space-y-1 text-sm">
-            {quiz.qs.map((qq, i) => (
-              <li key={i} className="flex items-start gap-2">
-                {quiz.picks[i] === qq.answerIndex ? (
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                ) : (
-                  <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-                )}
-                <span>
-                  Q{i + 1}: correct answer —{" "}
-                  <span className="font-mono">
-                    {qq.options[qq.answerIndex]}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ul>
-
-          <button
-            onClick={onStart}
-            className="mt-3 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-          >
-            New quiz
-          </button>
-        </div>
       )}
     </div>
   );

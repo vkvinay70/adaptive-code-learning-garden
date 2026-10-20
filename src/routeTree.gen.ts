@@ -10,33 +10,91 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LearnRouteImport } from './routes/learn'
+import { Route as PracticeRouteImport } from './routes/practice'
+import { Route as QuizzesRouteImport } from './routes/quizzes'
+import { Route as TutorRouteImport } from './routes/tutor'
+import { Route as ApiGeminiRouteImport } from './routes/api.gemini'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LearnRoute = LearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PracticeRoute = PracticeRouteImport.update({
+  id: '/practice',
+  path: '/practice',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuizzesRoute = QuizzesRouteImport.update({
+  id: '/quizzes',
+  path: '/quizzes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TutorRoute = TutorRouteImport.update({
+  id: '/tutor',
+  path: '/tutor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGeminiRoute = ApiGeminiRouteImport.update({
+  id: '/api/gemini',
+  path: '/api/gemini',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/learn': typeof LearnRoute
+  '/practice': typeof PracticeRoute
+  '/quizzes': typeof QuizzesRoute
+  '/tutor': typeof TutorRoute
+  '/api/gemini': typeof ApiGeminiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/learn': typeof LearnRoute
+  '/practice': typeof PracticeRoute
+  '/quizzes': typeof QuizzesRoute
+  '/tutor': typeof TutorRoute
+  '/api/gemini': typeof ApiGeminiRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/learn': typeof LearnRoute
+  '/practice': typeof PracticeRoute
+  '/quizzes': typeof QuizzesRoute
+  '/tutor': typeof TutorRoute
+  '/api/gemini': typeof ApiGeminiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    '/' | '/learn' | '/practice' | '/quizzes' | '/tutor' | '/api/gemini'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/learn' | '/practice' | '/quizzes' | '/tutor' | '/api/gemini'
+  id:
+    | '__root__'
+    | '/'
+    | '/learn'
+    | '/practice'
+    | '/quizzes'
+    | '/tutor'
+    | '/api/gemini'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LearnRoute: typeof LearnRoute
+  PracticeRoute: typeof PracticeRoute
+  QuizzesRoute: typeof QuizzesRoute
+  TutorRoute: typeof TutorRoute
+  ApiGeminiRoute: typeof ApiGeminiRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +106,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/learn': {
+      id: '/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof LearnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practice': {
+      id: '/practice'
+      path: '/practice'
+      fullPath: '/practice'
+      preLoaderRoute: typeof PracticeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quizzes': {
+      id: '/quizzes'
+      path: '/quizzes'
+      fullPath: '/quizzes'
+      preLoaderRoute: typeof QuizzesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tutor': {
+      id: '/tutor'
+      path: '/tutor'
+      fullPath: '/tutor'
+      preLoaderRoute: typeof TutorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/gemini': {
+      id: '/api/gemini'
+      path: '/api/gemini'
+      fullPath: '/api/gemini'
+      preLoaderRoute: typeof ApiGeminiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LearnRoute: LearnRoute,
+  PracticeRoute: PracticeRoute,
+  QuizzesRoute: QuizzesRoute,
+  TutorRoute: TutorRoute,
+  ApiGeminiRoute: ApiGeminiRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
