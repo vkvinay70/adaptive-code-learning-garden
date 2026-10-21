@@ -1,9 +1,17 @@
-
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { supabase } from "@/lib/supabase";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/reset-password")({
+  head: () => ({
+    meta: [
+      { title: "Reset Password — NaomiLearn" },
+      {
+        name: "description",
+        content: "Choose a new password for your NaomiLearn account.",
+      },
+    ],
+  }),
   component: ResetPasswordPage,
 });
 
@@ -31,17 +39,21 @@ function ResetPasswordPage() {
       return;
     }
 
+    if (!isSupabaseConfigured) {
+      setError("Supabase authentication environment variables are not configured.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { data, error: sessionError } =
-        await supabase.auth.getSession();
+      const { data, error: sessionError } = await supabase.auth.getSession();
 
       if (sessionError) throw sessionError;
 
       if (!data.session) {
         throw new Error(
-          "Your reset link may have expired. Request a new password reset email.",
+          "Your reset link may have expired. Request a new password reset email from the login page.",
         );
       }
 
@@ -53,32 +65,43 @@ function ResetPasswordPage() {
 
       await supabase.auth.signOut();
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to reset password. Please try again.",
-      );
+      setError(err instanceof Error ? err.message : "Unable to reset password. Please try again.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#080d1b] px-4 py-10 text-white">
-      <section className="w-full max-w-md rounded-3xl border border-white/10 bg-[#111a2e] p-7 shadow-2xl sm:p-9">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-yellow-400 text-2xl font-bold text-slate-950">
-            N
-          </div>
-          <h1 className="text-3xl font-bold">Reset password</h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Choose a new password for your NaomiLearn account.
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10 text-foreground">
+      <section className="w-full max-w-md rounded-2xl border border-border bg-card p-7 shadow-sm sm:p-9">
+        <Link
+          to="/login"
+          className="text-xs font-semibold text-muted-foreground transition-colors hover:text-primary"
+        >
+          ← Back to Sign In
+        </Link>
+
+        <div className="mb-7 mt-6 text-center">
+          <img
+            src="/favicon.png"
+            alt="NaomiLearn logo"
+            referrerPolicy="no-referrer"
+            className="mx-auto mb-3 h-12 w-12 rounded-xl border border-border object-cover"
+          />
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
+            Reset your password
+          </h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Choose a strong new password for your NaomiLearn account.
           </p>
         </div>
 
-        <form onSubmit={handleReset} className="space-y-5">
+        <form onSubmit={handleReset} className="space-y-4">
           <div>
-            <label htmlFor="password" className="mb-2 block text-sm font-medium">
+            <label
+              htmlFor="password"
+              className="mb-1.5 block text-xs font-semibold text-foreground"
+            >
               New password
             </label>
             <input
@@ -90,14 +113,14 @@ function ResetPasswordPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="At least 8 characters"
-              className="w-full rounded-xl border border-white/15 bg-[#080d1b] px-4 py-3 outline-none placeholder:text-slate-600 focus:border-yellow-400"
+              className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
 
           <div>
             <label
               htmlFor="confirmPassword"
-              className="mb-2 block text-sm font-medium"
+              className="mb-1.5 block text-xs font-semibold text-foreground"
             >
               Confirm new password
             </label>
@@ -110,28 +133,34 @@ function ResetPasswordPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Enter password again"
-              className="w-full rounded-xl border border-white/15 bg-[#080d1b] px-4 py-3 outline-none placeholder:text-slate-600 focus:border-yellow-400"
+              className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-slate-400">
+          <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
             <input
               type="checkbox"
               checked={showPassword}
               onChange={(e) => setShowPassword(e.target.checked)}
-              className="accent-yellow-400"
+              className="accent-primary"
             />
             Show passwords
           </label>
 
           {error && (
-            <p role="alert" className="break-words rounded-lg bg-red-400/10 p-3 text-sm text-red-300">
+            <p
+              role="alert"
+              className="break-words rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive"
+            >
               {error}
             </p>
           )}
 
           {message && (
-            <p role="status" className="break-words rounded-lg bg-green-400/10 p-3 text-sm text-green-300">
+            <p
+              role="status"
+              className="break-words rounded-xl border border-success/40 bg-success/10 p-3 text-xs text-success"
+            >
               {message}
             </p>
           )}
@@ -139,18 +168,18 @@ function ResetPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-yellow-400 px-4 py-3 font-bold text-slate-950 transition hover:bg-yellow-300 disabled:opacity-60"
+            className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
           >
-            {loading ? "Updating password..." : "Update password"}
+            {loading ? "Updating password..." : "Update Password"}
           </button>
 
           {message && (
             <button
               type="button"
               onClick={() => navigate({ to: "/login" })}
-              className="w-full rounded-xl border border-white/15 px-4 py-3 font-semibold hover:bg-white/5"
+              className="w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-secondary/80"
             >
-              Go to sign in
+              Go to Sign In
             </button>
           )}
         </form>

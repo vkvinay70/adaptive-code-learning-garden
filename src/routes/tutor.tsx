@@ -1,21 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import {
   BookOpen,
   Code2,
-  ClipboardCheck,
   Send,
   Lightbulb,
-  Baby,
+  Sparkles,
   SkipForward,
   Target,
   TrendingUp,
   AlertTriangle,
   Compass,
   Loader2,
-  CheckCircle2,
-  XCircle,
+  RotateCcw,
+  Wrench,
+  FileCode,
+  HelpCircle,
 } from "lucide-react";
 import {
   MODULES,
@@ -27,65 +28,80 @@ import {
   saveStats,
   loadName,
   saveName,
+  loadCompletedLessons,
   recordActivity,
-  type Mode,
   type Msg,
   type Stats,
+  type CompletedLessonRecord,
 } from "@/lib/tutor";
+import type { LearningLevel } from "@/lib/curriculum";
 
 export const Route = createFileRoute("/tutor")({
+  validateSearch: (search: Record<string, unknown>): { module?: string; level?: LearningLevel } => {
+    const mod = typeof search["module"] === "string" ? search["module"] : undefined;
+    const lvl = search["level"];
+    const validLevel =
+      lvl === "Beginner" || lvl === "Intermediate" || lvl === "Advanced" ? lvl : undefined;
+    return {
+      ...(mod ? { module: mod } : {}),
+      ...(validLevel ? { level: validLevel } : {}),
+    };
+  },
   head: () => ({
     meta: [
-      { title: "AI Tutor — NaomiLearn" },
+      { title: "AI Python Tutor Agent — NaomiLearn" },
       {
         name: "description",
         content:
-          "Chat with the NaomiLearn AI tutor: learn Python concepts, solve practice problems and take adaptive quizzes.",
+          "Chat with Naomi, your Gemini-powered AI Python Tutor. Get level-adapted explanations, step-by-step hints, line-by-line code breakdowns, and custom practice exercises.",
       },
-      { property: "og:title", content: "AI Tutor — NaomiLearn" },
+      { property: "og:title", content: "AI Python Tutor Agent — NaomiLearn" },
       {
         property: "og:description",
         content:
-          "Learn Python with an adaptive AI tutor: lessons, practice problems and quizzes.",
+          "Personalized Python coaching powered by Gemini with curriculum-aware agent tools.",
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Tutor,
+  component: TutorPage,
 });
 
-type QuizQ = {
-  question: string;
-  options: string[];
-  answerIndex: number;
-  explanation: string;
+const TOOL_LABELS: Record<string, string> = {
+  getCurriculumModule: "Loaded Curriculum Module",
+  recommendNextLesson: "Analyzed Learning Path",
+  generatePracticeExercise: "Generated Guided Exercise",
+  explainQuizAnswer: "Retrieved Quiz Reference",
+  summarizeStudentProgress: "Checked Student Progress",
+  reviewStudentCode: "Inspected Python Code",
 };
 
 const inputCls =
-  "h-9 rounded-md border border-input bg-secondary px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
+  "h-9 rounded-xl border border-border bg-card px-3 text-xs sm:text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-ring";
 
-function Tutor() {
+function TutorPage() {
+  const search = Route.useSearch();
   const [name, setName] = useState("");
-  const [module, setModule] = useState<string>(MODULES[0]);
-  const [level, setLevel] = useState<string>(LEVELS[0]);
-  const [mode, setMode] = useState<Mode>("learn");
+  const [module, setModule] = useState<string>(search.module ?? MODULES[0]);
+  const [level, setLevel] = useState<LearningLevel>(search.level ?? LEVELS[0]);
   const [chats, setChats] = useState<Record<string, Msg[]>>({});
   const [input, setInput] = useState("");
+  const [lastSubmittedPrompt, setLastSubmittedPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [stats, setStats] = useState<Stats>({});
-  const [quiz, setQuiz] = useState<{
-    qs: QuizQ[];
-    idx: number;
-    picks: number[];
-  } | null>(null);
+  const [completedLessons, setCompletedLessons] = useState<CompletedLessonRecord[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setName(loadName());
     setStats(loadStats());
+    setCompletedLessons(loadCompletedLessons());
   }, []);
+
+  useEffect(() => {
+    if (search.module) setModule(search.module);
+    if (search.level) setLevel(search.level);
+  }, [search.module, search.level]);
 
   useEffect(() => {
     saveStats(stats);
@@ -95,18 +111,19 @@ function Tutor() {
     saveName(name);
   }, [name]);
 
-  const chatKey = `${mode}|${module}`;
+  const chatKey = `${level}|${module}`;
   const messages = chats[chatKey] ?? [];
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, loading, quiz?.idx]);
+  }, [messages.length, loading]);
 
-  const record = (correct: boolean) => {
+  const a = analyze(stats, completedLessons);
+
+  const recordVerdict = (correct: boolean) => {
     recordActivity();
     setStats((s) => {
       const cur = s[module] ?? { attempted: 0, correct: 0 };
-
       return {
         ...s,
         [module]: {
@@ -117,17 +134,26 @@ function Tutor() {
     });
   };
 
-  const system = () =>
-    `${SYSTEM_PROMPT}\n\nStudent: ${name || "Student"}. Module: ${module}. Difficulty: ${level}. Current mode: ${mode === "learn" ? "Learn Mode" : mode === "practice" ? "Practice Mode" : "Quiz Mode"}.` +
-    (mode === "practice"
-      ? "\nWhen you give a challenge, describe it clearly and wait for code. When the student submits code to solve a challenge, evaluate it and end your reply with exactly one line: VERDICT: CORRECT or VERDICT: INCORRECT. Give hints, not the full solution, unless asked twice."
-      : "") +
-    "\nKeep responses concise and use markdown with ```python code blocks.";
+  const buildSystemInstruction = () =>
+    `${SYSTEM_PROMPT}
+
+Student Name: ${name || "Student"}
+Selected Difficulty Level: ${level}
+Active Topic / Module: ${module}
+Student Recorded Progress: ${a.attempted} questions attempted (${a.accuracy}% accuracy), ${completedLessons.length}/24 lessons completed.
+
+Teaching Guidelines:
+- Adapt your vocabulary and depth strictly to ${level} level.
+- Use valid Python 3 examples inside \`\`\`python code blocks and explain expected output accurately.
+- Prefer Socratic hints and step-by-step reasoning before showing a complete solution.
+- When a student submits Python code to solve a practice challenge, evaluate it carefully and end your response with VERDICT: CORRECT or VERDICT: INCORRECT.`;
 
   async function send(text: string) {
-    if (!text.trim() || loading) return;
+    const trimmed = text.trim();
+    if (!trimmed || loading) return;
 
-    const next = [...messages, { role: "user" as const, text }];
+    setLastSubmittedPrompt(trimmed);
+    const next: Msg[] = [...messages, { role: "user", text: trimmed }];
 
     setChats((c) => ({ ...c, [chatKey]: next }));
     setInput("");
@@ -135,114 +161,111 @@ function Tutor() {
     setLoading(true);
 
     try {
-      let reply = await callGemini({
-        system: system(),
+      const res = await callGemini({
+        system: buildSystemInstruction(),
         messages: next,
+        level,
+        module,
+        progressSummary: {
+          attempted: a.attempted,
+          accuracy: a.accuracy,
+          completedCount: completedLessons.length,
+          recommended: a.recommended,
+        },
       });
 
+      let reply = res.text;
       const m = reply.match(/VERDICT:\s*(CORRECT|INCORRECT)/i);
 
       if (m?.[1]) {
         const ok = m[1].toUpperCase() === "CORRECT";
-        record(ok);
+        recordVerdict(ok);
         reply = reply.replace(
           m[0],
-          ok ? "✅ **Correct!**" : "❌ **Not quite yet.**",
+          ok
+            ? "✅ **Solution Verified: Correct!**"
+            : "❌ **Not quite yet — see the hint above and try again.**",
         );
       }
 
       setChats((c) => ({
         ...c,
-        [chatKey]: [...next, { role: "model", text: reply }],
-      }));
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Unable to get an AI response.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function startQuiz() {
-    if (loading) return;
-
-    setLoading(true);
-    setError("");
-    setQuiz(null);
-
-    try {
-      const raw = await callGemini({
-        system: system(),
-        json: true,
-        messages: [
+        [chatKey]: [
+          ...next,
           {
-            role: "user",
-            text: `Create 3 multiple-choice Python questions on "${module}" at ${level} level. Return JSON: {"questions":[{"question":"string, may include markdown code","options":["four options"],"answerIndex":0,"explanation":"string"}]}`,
+            role: "model",
+            text: reply,
+            ...(res.toolsUsed ? { toolsUsed: res.toolsUsed } : {}),
           },
         ],
-      });
-
-      const parsed = JSON.parse(raw);
-      const questions = parsed.questions;
-
-      if (
-        !Array.isArray(questions) ||
-        questions.length < 3 ||
-        questions.slice(0, 3).some(
-          (q: QuizQ) =>
-            typeof q.question !== "string" ||
-            !Array.isArray(q.options) ||
-            q.options.length !== 4 ||
-            !Number.isInteger(q.answerIndex) ||
-            q.answerIndex < 0 ||
-            q.answerIndex > 3 ||
-            typeof q.explanation !== "string",
-        )
-      ) {
-        throw new Error("The AI returned an invalid quiz. Please try again.");
-      }
-
-      setQuiz({
-        qs: questions.slice(0, 3),
-        idx: 0,
-        picks: [],
-      });
+      }));
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Unable to generate the quiz.",
-      );
+      setError(e instanceof Error ? e.message : "Unable to get an AI Tutor response.");
     } finally {
       setLoading(false);
     }
   }
 
-  function pick(i: number) {
-    if (!quiz || quiz.picks[quiz.idx] !== undefined) return;
+  const handleRetryLast = () => {
+    if (!lastSubmittedPrompt || loading) return;
+    // Remove last user message if it didn't get a model response, then resend
+    const currentList = chats[chatKey] ?? [];
+    if (currentList.length > 0 && currentList[currentList.length - 1]?.role === "user") {
+      const trimmedHistory = currentList.slice(0, -1);
+      setChats((c) => ({ ...c, [chatKey]: trimmedHistory }));
+    }
+    send(lastSubmittedPrompt);
+  };
 
-    record(i === quiz.qs[quiz.idx]?.answerIndex);
-    setQuiz({ ...quiz, picks: [...quiz.picks, i] });
-  }
+  const handleClearChat = () => {
+    setChats((c) => ({ ...c, [chatKey]: [] }));
+    setError("");
+  };
 
-  const a = analyze(stats);
-
-  const tabs: { id: Mode; label: string; icon: typeof BookOpen }[] = [
-    { id: "learn", label: "Learn", icon: BookOpen },
-    { id: "practice", label: "Practice", icon: Code2 },
-    { id: "quiz", label: "Quiz", icon: ClipboardCheck },
+  const quickActions = [
+    {
+      label: `Teach me ${module}`,
+      prompt: `Teach me "${module}" at ${level} level with a clear explanation, a short runnable Python example, and 1 quick check question.`,
+      icon: BookOpen,
+    },
+    {
+      label: "Give me a practice problem",
+      prompt: `Generate a ${level} Python practice problem on "${module}". Describe the goal and expected output, and wait for my code before showing the solution.`,
+      icon: Code2,
+    },
+    {
+      label: "Give me a hint",
+      prompt: `Give me a progressive hint for "${module}" without revealing the full answer yet.`,
+      icon: Lightbulb,
+    },
+    {
+      label: "Explain line by line",
+      prompt: `Show a canonical Python example for "${module}" and explain how it works line by line, including the exact expected output.`,
+      icon: FileCode,
+    },
+    {
+      label: "Explain simpler",
+      prompt: `Explain "${module}" using a simple everyday analogy and a minimal 3-line Python snippet.`,
+      icon: HelpCircle,
+    },
+    {
+      label: "Suggested next step",
+      prompt: `Based on my current progress and ${level} level, what should I study or practice next after "${module}"?`,
+      icon: SkipForward,
+    },
   ];
 
-  const starter =
-    mode === "learn"
-      ? `Teach me ${module}`
-      : `Give me a ${level.toLowerCase()} practice problem on ${module}`;
-
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6">
-      {/* Setup bar */}
-      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 space-y-5">
+      {/* Context Setup Toolbar */}
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3.5">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <span className="text-sm font-extrabold text-foreground">AI Python Tutor Agent</span>
+        </div>
+
         <input
-          className={`${inputCls} w-40`}
+          className={`${inputCls} w-36 sm:w-44 font-normal`}
           placeholder="Your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -251,199 +274,200 @@ function Tutor() {
 
         <select
           className={inputCls}
-          value={module}
-          onChange={(e) => {
-            setModule(e.target.value);
-            setQuiz(null);
-          }}
-          aria-label="Module"
+          value={level}
+          onChange={(e) => setLevel(e.target.value as LearningLevel)}
+          aria-label="Difficulty level"
         >
-          {MODULES.map((m) => (
-            <option key={m}>{m}</option>
+          {LEVELS.map((l) => (
+            <option key={l} value={l}>
+              {l} Level
+            </option>
           ))}
         </select>
 
         <select
           className={inputCls}
-          value={level}
-          onChange={(e) => setLevel(e.target.value)}
-          aria-label="Difficulty level"
+          value={module}
+          onChange={(e) => setModule(e.target.value)}
+          aria-label="Topic module"
         >
-          {LEVELS.map((l) => (
-            <option key={l}>{l}</option>
+          {MODULES.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
           ))}
         </select>
 
-        <span className="ml-auto font-mono text-xs text-muted-foreground">
-          {module} · {level}
-        </span>
+        {messages.length > 0 && (
+          <button
+            type="button"
+            onClick={handleClearChat}
+            className="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground whitespace-nowrap"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            New Thread
+          </button>
+        )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-        <section className="flex min-h-[70vh] flex-col rounded-xl border border-border bg-card">
-          <div className="flex gap-1 border-b border-border p-2">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setMode(t.id)}
-                className={`inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition ${
-                  mode === t.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-secondary"
-                }`}
-              >
-                <t.icon className="h-4 w-4" />
-                {t.label}
-              </button>
-            ))}
-          </div>
+      {/* Main Split: Chat Canvas (Left) + Student Context & Next Step Panel (Right) */}
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px] items-start">
+        <section className="flex min-h-[72vh] flex-col rounded-2xl border border-border bg-card overflow-hidden">
+          {/* Chat Messages Viewport */}
+          <div className="flex-1 space-y-4 overflow-y-auto p-5 sm:p-6">
+            {messages.length === 0 && (
+              <div className="mx-auto max-w-xl py-10 text-center space-y-5">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-primary">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-extrabold text-foreground">
+                    Hi{name ? `, ${name}` : ""}! I&apos;m Naomi, your AI Python Tutor.
+                  </h1>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Currently tuned to <strong>{level}</strong> level for <strong>{module}</strong>.
+                    Ask any Python question, paste code for debugging help, or pick a guided action
+                    below.
+                  </p>
+                </div>
 
-          <div className="flex-1 space-y-4 overflow-y-auto p-5">
-            {mode !== "quiz" ? (
-              <>
-                {messages.length === 0 && (
-                  <div className="py-12 text-center">
-                    <h2 className="text-2xl font-bold">
-                      Hi{name ? `, ${name}` : ""} 👋
-                    </h2>
-                    <p className="mt-2 text-muted-foreground">
-                      {mode === "learn"
-                        ? "Ask anything, or start with a lesson."
-                        : "Solve challenges — I'll hint, not spoil."}
-                    </p>
+                <div className="grid gap-2.5 sm:grid-cols-2 text-left">
+                  {quickActions.map((qa) => (
                     <button
-                      onClick={() => send(starter)}
+                      key={qa.label}
+                      type="button"
                       disabled={loading}
-                      className="mt-5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+                      onClick={() => send(qa.prompt)}
+                      className="flex items-center gap-2.5 rounded-xl border border-border bg-background/70 p-3 text-xs font-semibold text-foreground transition-colors hover:border-primary hover:bg-secondary/50 disabled:opacity-50"
                     >
-                      {starter}
+                      <qa.icon className="h-4 w-4 shrink-0 text-primary" />
+                      <span>{qa.label}</span>
                     </button>
-                  </div>
-                )}
-
-                {messages.map((m, i) => (
-                  <div
-                    key={i}
-                    className={m.role === "user" ? "flex justify-end" : ""}
-                  >
-                    {m.role === "user" ? (
-                      <div className="max-w-[80%] whitespace-pre-wrap rounded-xl bg-accent px-4 py-2 font-mono text-sm text-accent-foreground">
-                        {m.text}
-                      </div>
-                    ) : (
-                      <div className="prose-tutor text-sm">
-                        <ReactMarkdown>{m.text}</ReactMarkdown>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </>
-            ) : (
-              <QuizView
-                quiz={quiz}
-                loading={loading}
-                onStart={startQuiz}
-                onPick={pick}
-                onNext={() =>
-                  quiz && setQuiz({ ...quiz, idx: quiz.idx + 1 })
-                }
-                module={module}
-              />
+                  ))}
+                </div>
+              </div>
             )}
 
-            {loading && mode !== "quiz" && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Your tutor is thinking…
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={m.role === "user" ? "flex justify-end" : "flex justify-start"}
+              >
+                {m.role === "user" ? (
+                  <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl bg-primary px-4 py-3 text-sm text-primary-foreground">
+                    {m.text}
+                  </div>
+                ) : (
+                  <div className="max-w-[92%] rounded-2xl border border-border bg-background/60 p-4 sm:p-5 space-y-2.5">
+                    {m.toolsUsed && m.toolsUsed.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-2 border-b border-border pb-2 text-[11px] font-semibold text-primary">
+                        <Wrench className="h-3.5 w-3.5" />
+                        <span>
+                          Agent actions: {m.toolsUsed.map((t) => TOOL_LABELS[t] ?? t).join(" · ")}
+                        </span>
+                      </div>
+                    )}
+                    <div className="prose-tutor text-sm text-foreground">
+                      <ReactMarkdown>{m.text}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {loading && (
+              <div className="flex items-center gap-2.5 rounded-xl border border-border bg-secondary/40 px-4 py-3 text-xs sm:text-sm font-medium text-muted-foreground w-fit">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <span>Naomi is analyzing your request…</span>
               </div>
             )}
 
             {error && (
-              <div className="rounded-md border border-destructive px-3 py-2 text-sm text-destructive">
-                {error}
+              <div
+                role="alert"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-xs sm:text-sm text-destructive"
+              >
+                <span>{error}</span>
+                {lastSubmittedPrompt && (
+                  <button
+                    type="button"
+                    onClick={handleRetryLast}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-card px-3 py-1.5 text-xs font-semibold text-foreground border border-border hover:bg-secondary whitespace-nowrap"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    Retry Request
+                  </button>
+                )}
               </div>
             )}
 
             <div ref={endRef} />
           </div>
 
-          {mode !== "quiz" && (
-            <div className="border-t border-border p-3">
-              <div className="flex gap-2">
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  rows={mode === "practice" ? 4 : 2}
-                  onKeyDown={(e) => {
-                    if (
-                      e.key === "Enter" &&
-                      (e.metaKey ||
-                        e.ctrlKey ||
-                        (mode === "learn" && !e.shiftKey))
-                    ) {
-                      e.preventDefault();
-                      send(input);
-                    }
-                  }}
-                  placeholder={
-                    mode === "practice"
-                      ? "Paste your Python code here… (Ctrl+Enter to submit)"
-                      : "Ask your tutor a question…"
-                  }
-                  className="flex-1 resize-none rounded-md border border-input bg-code p-3 font-mono text-sm outline-none focus:ring-2 focus:ring-ring"
-                />
-
+          {/* Input Composer & Quick Action Bar */}
+          <div className="border-t border-border bg-secondary/30 p-3.5 sm:p-4 space-y-3">
+            <div className="flex flex-wrap gap-1.5">
+              {quickActions.map((qa) => (
                 <button
-                  onClick={() => send(input)}
+                  key={qa.label}
+                  type="button"
+                  onClick={() => send(qa.prompt)}
                   disabled={loading}
-                  className="grid w-12 place-items-center rounded-md bg-primary text-primary-foreground disabled:opacity-50"
-                  aria-label="Send message"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary disabled:opacity-50 whitespace-nowrap"
                 >
-                  <Send className="h-4 w-4" />
+                  <qa.icon className="h-3.5 w-3.5" />
+                  {qa.label}
                 </button>
-              </div>
-
-              <div className="mt-2 flex flex-wrap gap-2">
-                {[
-                  { t: "Give me a hint", i: Lightbulb },
-                  { t: "Explain simpler", i: Baby },
-                  { t: "Next topic", i: SkipForward },
-                ].map((q) => (
-                  <button
-                    key={q.t}
-                    onClick={() => send(q.t)}
-                    disabled={loading}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-50"
-                  >
-                    <q.i className="h-3.5 w-3.5" />
-                    {q.t}
-                  </button>
-                ))}
-              </div>
+              ))}
             </div>
-          )}
+
+            <div className="flex gap-2.5">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                rows={3}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    send(input);
+                  }
+                }}
+                placeholder="Ask a Python question, paste code for debugging, or request a step-by-step explanation… (Enter to send, Shift+Enter for new line)"
+                className="flex-1 resize-none rounded-xl border border-border bg-card p-3 font-mono text-xs sm:text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+              />
+
+              <button
+                type="button"
+                onClick={() => send(input)}
+                disabled={loading || !input.trim()}
+                className="inline-flex items-center justify-center rounded-xl bg-primary px-4 text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                aria-label="Send message to AI Tutor"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </section>
 
+        {/* Right Context Panel: Progress, Strengths, Weaknesses & Recommended Lesson */}
         <aside className="space-y-4">
-          <div className="rounded-xl border border-border bg-card p-4">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
               <Target className="h-4 w-4 text-primary" />
-              Progress
-            </h3>
+              Your Recorded Progress
+            </h2>
 
             <div className="grid grid-cols-3 gap-2 text-center">
               {[
                 ["Attempted", a.attempted],
-                ["Score", a.correct],
+                ["Lessons", `${completedLessons.length}/24`],
                 ["Accuracy", `${a.accuracy}%`],
-              ].map(([l, v]) => (
-                <div key={l} className="rounded-md bg-secondary p-2">
-                  <div className="font-mono text-lg font-bold text-primary">
-                    {v}
+              ].map(([label, val]) => (
+                <div key={label} className="rounded-xl bg-secondary/70 p-2.5">
+                  <div className="font-mono text-base font-bold text-primary tabular-nums">
+                    {val}
                   </div>
-                  <div className="text-[10px] uppercase text-muted-foreground">
-                    {l}
-                  </div>
+                  <div className="text-[11px] font-medium text-muted-foreground">{label}</div>
                 </div>
               ))}
             </div>
@@ -456,40 +480,53 @@ function Tutor() {
             </div>
           </div>
 
-          <List
+          <StatusList
             title="Strong Areas"
             icon={TrendingUp}
             items={a.strong}
             tone="text-success"
-            empty="Answer questions to discover strengths"
+            empty="Complete exercises or quizzes to uncover strengths."
           />
 
-          <List
+          <StatusList
             title="Needs Practice"
             icon={AlertTriangle}
             items={a.weak}
             tone="text-destructive"
-            empty="Nothing flagged yet"
+            empty="No weak modules flagged."
           />
 
-          <div className="rounded-xl border border-primary/40 bg-card p-4">
-            <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold">
+          <div className="rounded-2xl border border-primary/30 bg-card p-5 space-y-3">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
               <Compass className="h-4 w-4 text-primary" />
-              Recommended Next Lesson
-            </h3>
+              Recommended Next Step
+            </h2>
 
-            <p className="font-semibold">{a.recommended}</p>
+            <p className="text-base font-bold text-foreground">{a.recommended}</p>
+            <p className="text-xs text-muted-foreground">
+              Switch to this topic to study concepts or practice with Naomi.
+            </p>
 
-            <button
-              onClick={() => {
-                setModule(a.recommended);
-                setMode("learn");
-                setQuiz(null);
-              }}
-              className="mt-3 w-full rounded-md bg-primary py-2 text-sm font-semibold text-primary-foreground"
-            >
-              Start lesson
-            </button>
+            <div className="grid gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setModule(a.recommended);
+                  send(
+                    `Teach me "${a.recommended}" at ${level} level with an example and a quick practice question.`,
+                  );
+                }}
+                className="w-full rounded-xl bg-primary py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Study {a.recommended} Now
+              </button>
+              <Link
+                to="/practice"
+                className="w-full rounded-xl border border-border bg-secondary py-2 text-center text-xs font-semibold text-secondary-foreground hover:bg-secondary/80"
+              >
+                Open Python Code Lab
+              </Link>
+            </div>
           </div>
         </aside>
       </div>
@@ -497,7 +534,7 @@ function Tutor() {
   );
 }
 
-function List({
+function StatusList({
   title,
   icon: Icon,
   items,
@@ -511,174 +548,23 @@ function List({
   empty: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold">
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-foreground">
         <Icon className={`h-4 w-4 ${tone}`} />
         {title}
-      </h3>
+      </h2>
 
       {items.length ? (
-        <ul className="space-y-1 text-sm">
-          {items.map((i) => (
+        <ul className="space-y-1.5 text-xs sm:text-sm text-foreground">
+          {items.slice(0, 5).map((i) => (
             <li key={i} className="flex items-center gap-2">
               <span className={`h-1.5 w-1.5 rounded-full bg-current ${tone}`} />
-              {i}
+              <span>{i}</span>
             </li>
           ))}
         </ul>
       ) : (
         <p className="text-xs text-muted-foreground">{empty}</p>
-      )}
-    </div>
-  );
-}
-
-function QuizView({
-  quiz,
-  loading,
-  onStart,
-  onPick,
-  onNext,
-  module,
-}: {
-  quiz: { qs: QuizQ[]; idx: number; picks: number[] } | null;
-  loading: boolean;
-  module: string;
-  onStart: () => void;
-  onPick: (i: number) => void;
-  onNext: () => void;
-}) {
-  if (loading)
-    return (
-      <div className="flex items-center justify-center gap-2 py-20 text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin" />
-        Generating your quiz…
-      </div>
-    );
-
-  if (!quiz)
-    return (
-      <div className="py-16 text-center">
-        <ClipboardCheck className="mx-auto h-10 w-10 text-primary" />
-        <h2 className="mt-3 text-2xl font-bold">
-          3-question quiz on {module}
-        </h2>
-        <button
-          onClick={onStart}
-          className="mt-5 rounded-md bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
-        >
-          Start quiz
-        </button>
-      </div>
-    );
-
-  const done =
-    quiz.picks.length === quiz.qs.length &&
-    quiz.idx >= quiz.qs.length - 1 &&
-    quiz.picks[quiz.idx] !== undefined;
-
-  const score = quiz.picks.filter(
-    (p, i) => p === quiz.qs[i]?.answerIndex,
-  ).length;
-
-  const q = quiz.qs[quiz.idx]!;
-  const picked = quiz.picks[quiz.idx];
-
-  return (
-    <div className="space-y-4">
-      <div className="flex gap-1">
-        {quiz.qs.map((_, i) => (
-          <div
-            key={i}
-            className={`h-1.5 flex-1 rounded-full ${
-              i <= quiz.idx ? "bg-primary" : "bg-secondary"
-            }`}
-          />
-        ))}
-      </div>
-
-      <div className="font-mono text-xs text-muted-foreground">
-        Question {quiz.idx + 1} of {quiz.qs.length}
-      </div>
-
-      <div className="prose-tutor text-base font-medium">
-        <ReactMarkdown>{q.question}</ReactMarkdown>
-      </div>
-
-      <div className="grid gap-2">
-        {q.options.map((o, i) => {
-          const state =
-            picked === undefined
-              ? "border-border hover:border-primary"
-              : i === q.answerIndex
-                ? "border-success text-success"
-                : i === picked
-                  ? "border-destructive text-destructive"
-                  : "border-border opacity-60";
-
-          return (
-            <button
-              key={i}
-              onClick={() => onPick(i)}
-              className={`rounded-md border px-4 py-3 text-left font-mono text-sm transition ${state}`}
-            >
-              {String.fromCharCode(65 + i)}. {o}
-            </button>
-          );
-        })}
-      </div>
-
-      {picked !== undefined && (
-        <div className="rounded-md bg-secondary p-3 text-sm">
-          <div className="mb-1 font-semibold">
-            {picked === q.answerIndex ? "✅ Correct!" : "❌ Incorrect"}
-          </div>
-          <div className="prose-tutor">
-            <ReactMarkdown>{q.explanation}</ReactMarkdown>
-          </div>
-        </div>
-      )}
-
-      {picked !== undefined && !done && (
-        <button
-          onClick={onNext}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-        >
-          Next question
-        </button>
-      )}
-
-      {done && (
-        <div className="rounded-xl border border-primary/40 p-4">
-          <h3 className="text-lg font-bold">
-            Score: {score}/{quiz.qs.length}
-          </h3>
-
-          <ul className="mt-2 space-y-1 text-sm">
-            {quiz.qs.map((qq, i) => (
-              <li key={i} className="flex items-start gap-2">
-                {quiz.picks[i] === qq.answerIndex ? (
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                ) : (
-                  <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-                )}
-                <span>
-                  Q{i + 1}: correct answer —{" "}
-                  <span className="font-mono">
-                    {qq.options[qq.answerIndex]}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ul>
-
-          <button
-            onClick={onStart}
-            className="mt-3 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-          >
-            New quiz
-          </button>
-        </div>
       )}
     </div>
   );

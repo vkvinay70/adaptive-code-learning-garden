@@ -1,0 +1,6 @@
+{
+  "name": "NaomiLearn — Python & AI Academy",
+  "description": "Learn Python. Master AI. Build Your Future. Interactive Python curriculum, in-browser Code Lab, adaptive quizzes, and personalized Gemini AI Tutor.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

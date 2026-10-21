@@ -5,12 +5,15 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -25,15 +28,15 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --color-gold: var(--gold);
-  --color-gold-foreground: var(--gold-foreground);
-  --color-success: var(--success);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-gold: var(--gold);
+  --color-navy: var(--navy);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-code: var(--code);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -46,60 +49,173 @@
 
 :root {
   --radius: 0.75rem;
-  /* Deep navy canvas */
-  --background: oklch(0.15 0.025 262);
-  --foreground: oklch(0.96 0.008 250);
-  --card: oklch(0.185 0.03 262);
-  --card-foreground: oklch(0.96 0.008 250);
-  --popover: oklch(0.185 0.03 262);
-  --popover-foreground: oklch(0.96 0.008 250);
-  /* Electric blue accent */
-  --primary: oklch(0.68 0.17 248);
-  --primary-foreground: oklch(0.13 0.02 262);
-  --secondary: oklch(0.23 0.032 262);
-  --secondary-foreground: oklch(0.96 0.008 250);
-  --muted: oklch(0.21 0.03 262);
-  --muted-foreground: oklch(0.7 0.03 255);
-  --accent: oklch(0.26 0.045 250);
-  --accent-foreground: oklch(0.9 0.05 248);
-  /* Golden-yellow highlights */
-  --gold: oklch(0.84 0.15 92);
-  --gold-foreground: oklch(0.2 0.04 92);
-  --success: oklch(0.75 0.16 150);
-  --destructive: oklch(0.66 0.2 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.28 0.03 262);
-  --input: oklch(0.28 0.03 262);
-  --ring: oklch(0.68 0.17 248);
-  --code: oklch(0.12 0.02 262);
-  /* Sidebar */
-  --sidebar: oklch(0.13 0.022 262);
-  --sidebar-foreground: oklch(0.96 0.008 250);
-  --sidebar-primary: oklch(0.68 0.17 248);
-  --sidebar-primary-foreground: oklch(0.13 0.02 262);
-  --sidebar-accent: oklch(0.23 0.032 262);
-  --sidebar-accent-foreground: oklch(0.96 0.008 250);
-  --sidebar-border: oklch(0.26 0.03 262);
-  --sidebar-ring: oklch(0.68 0.17 248);
+
+  /* Light Lavender & Crisp White Canvas with Deep Navy & Royal Violet Accents */
+  --background: #faf8ff;
+  --foreground: #0f172a;
+
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+
+  /* Royal Violet Primary */
+  --primary: #6d28d9;
+  --primary-foreground: #ffffff;
+
+  /* Soft Lavender Secondary Surface */
+  --secondary: #f3effd;
+  --secondary-foreground: #2e1065;
+
+  --muted: #f3effd;
+  --muted-foreground: #475569;
+
+  /* Electric Violet Accent */
+  --accent: #7c3aed;
+  --accent-foreground: #ffffff;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --success: #059669;
+  --gold: #d97706;
+  --navy: #1e1b4b;
+
+  --border: #e4ddf7;
+  --input: #e4ddf7;
+  --ring: #7c3aed;
+
+  /* Sidebar Tokens */
+  --sidebar: #f6f3ff;
+  --sidebar-foreground: #1e1b4b;
+  --sidebar-primary: #6d28d9;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ede7fe;
+  --sidebar-accent-foreground: #4c1d95;
+  --sidebar-border: #e4ddf7;
+  --sidebar-ring: #7c3aed;
+}
+
+.dark {
+  --background: #0f0d1d;
+  --foreground: #f8fafc;
+  --card: #17142b;
+  --card-foreground: #f8fafc;
+  --popover: #17142b;
+  --popover-foreground: #f8fafc;
+  --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
+  --secondary: #221d3d;
+  --secondary-foreground: #e9d5ff;
+  --muted: #221d3d;
+  --muted-foreground: #94a3b8;
+  --accent: #7c3aed;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --success: #10b981;
+  --gold: #f59e0b;
+  --navy: #1e1b4b;
+  --border: #2e2752;
+  --input: #2e2752;
+  --ring: #8b5cf6;
+  --sidebar: #131024;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #8b5cf6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #221d3d;
+  --sidebar-accent-foreground: #e9d5ff;
+  --sidebar-border: #2e2752;
+  --sidebar-ring: #8b5cf6;
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-sans);
-    background-image: radial-gradient(circle at 12% 0%, oklch(0.68 0.17 248 / 0.1), transparent 42%),
-      radial-gradient(circle at 92% 100%, oklch(0.84 0.15 92 / 0.05), transparent 42%);
-    background-attachment: fixed;
+    @apply bg-background text-foreground font-sans antialiased;
+    margin: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  code,
+  pre {
+    font-family: var(--font-mono);
   }
 }
 
-.prose-tutor p { margin: 0.5rem 0; line-height: 1.6; }
-.prose-tutor ul, .prose-tutor ol { margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc; }
-.prose-tutor ol { list-style: decimal; }
-.prose-tutor strong { color: var(--primary); }
-.prose-tutor h1, .prose-tutor h2, .prose-tutor h3 { font-weight: 700; margin: 0.75rem 0 0.25rem; }
-.prose-tutor code { font-family: var(--font-mono); font-size: 0.85em; background: var(--code); padding: 0.1rem 0.35rem; border-radius: 0.3rem; color: var(--gold); }
-.prose-tutor pre { background: var(--code); border: 1px solid var(--border); border-radius: 0.6rem; padding: 0.85rem; overflow-x: auto; margin: 0.6rem 0; }
-.prose-tutor pre code { background: none; padding: 0; color: var(--foreground); }
+/* Subtle atmospheric hero mesh and architectural grid */
+.bg-hero-lavender {
+  background-color: #faf8ff;
+  background-image:
+    radial-gradient(at 12% 12%, rgba(124, 58, 237, 0.08) 0px, transparent 48%),
+    radial-gradient(at 88% 18%, rgba(109, 40, 217, 0.09) 0px, transparent 52%),
+    radial-gradient(at 50% 92%, rgba(237, 233, 254, 0.7) 0px, transparent 58%);
+}
+
+.bg-grid-lavender {
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(109, 40, 217, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(109, 40, 217, 0.045) 1px, transparent 1px);
+}
+
+/* Markdown formatting for AI Tutor responses & explanations */
+.prose-tutor p {
+  margin: 0.45rem 0;
+  line-height: 1.65;
+}
+.prose-tutor p:first-child {
+  margin-top: 0;
+}
+.prose-tutor p:last-child {
+  margin-bottom: 0;
+}
+.prose-tutor pre {
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #1e293b;
+  border-radius: 0.625rem;
+  padding: 0.875rem 1rem;
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  margin: 0.65rem 0;
+}
+.prose-tutor code {
+  background: #ede9fe;
+  color: #4c1d95;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.3rem;
+  font-size: 0.8125em;
+}
+.prose-tutor pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+.prose-tutor ul,
+.prose-tutor ol {
+  margin: 0.45rem 0;
+  padding-left: 1.35rem;
+}
+.prose-tutor li {
+  margin: 0.25rem 0;
+}
+.prose-tutor strong {
+  color: var(--foreground);
+  font-weight: 700;
+}
