@@ -24,12 +24,12 @@ export function CodeLabIllustration({ className = "" }: { className?: string }) 
           y2="280"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0%" stopColor="#1E1B4B" />
-          <stop offset="100%" stopColor="#0F172A" />
+          <stop offset="0%" stopColor="#0F172A" />
+          <stop offset="100%" stopColor="#1E293B" />
         </linearGradient>
         <linearGradient id="codelab-accent" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#8B5CF6" />
-          <stop offset="100%" stopColor="#6D28D9" />
+          <stop offset="0%" stopColor="#4B8BBE" />
+          <stop offset="100%" stopColor="#306998" />
         </linearGradient>
         <linearGradient id="codelab-emerald" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#34D399" />
@@ -52,9 +52,9 @@ export function CodeLabIllustration({ className = "" }: { className?: string }) 
         <line x1="384" y1="0" x2="384" y2="280" />
       </g>
 
-      {/* Ambient Violet Glow */}
-      <circle cx="370" cy="90" r="85" fill="#7C3AED" fillOpacity="0.22" />
-      <circle cx="120" cy="210" r="70" fill="#3B82F6" fillOpacity="0.14" />
+      {/* Ambient Python Blue & Gold Glow */}
+      <circle cx="370" cy="90" r="85" fill="#306998" fillOpacity="0.28" />
+      <circle cx="120" cy="210" r="70" fill="#FFD43B" fillOpacity="0.1" />
 
       {/* Editor Window Card */}
       <rect
@@ -70,7 +70,7 @@ export function CodeLabIllustration({ className = "" }: { className?: string }) 
       {/* Editor Top Bar */}
       <rect x="29" y="27" width="288" height="28" rx="11" fill="#1E293B" />
       <circle cx="45" cy="41" r="4.5" fill="#F87171" />
-      <circle cx="59" cy="41" r="4.5" fill="#FBBF24" />
+      <circle cx="59" cy="41" r="4.5" fill="#FFD43B" />
       <circle cx="73" cy="41" r="4.5" fill="#34D399" />
       <rect x="92" y="36" width="84" height="10" rx="5" fill="#334155" />
 
@@ -78,27 +78,27 @@ export function CodeLabIllustration({ className = "" }: { className?: string }) 
       <text x="42" y="76" fill="#64748B" fontFamily="monospace" fontSize="11">
         1
       </text>
-      <rect x="60" y="67" width="32" height="10" rx="4" fill="#C084FC" />
+      <rect x="60" y="67" width="32" height="10" rx="4" fill="#FFD43B" />
       <rect x="98" y="67" width="88" height="10" rx="4" fill="#60A5FA" />
       <rect x="192" y="67" width="46" height="10" rx="4" fill="#94A3B8" />
 
       <text x="42" y="98" fill="#64748B" fontFamily="monospace" fontSize="11">
         2
       </text>
-      <rect x="76" y="89" width="42" height="10" rx="4" fill="#C084FC" />
+      <rect x="76" y="89" width="42" height="10" rx="4" fill="#60A5FA" />
       <rect x="124" y="89" width="110" height="10" rx="4" fill="#34D399" />
 
       <text x="42" y="120" fill="#64748B" fontFamily="monospace" fontSize="11">
         3
       </text>
-      <rect x="76" y="111" width="54" height="10" rx="4" fill="#FBBF24" />
+      <rect x="76" y="111" width="54" height="10" rx="4" fill="#FFD43B" />
       <rect x="136" y="111" width="96" height="10" rx="4" fill="#E2E8F0" />
 
       <text x="42" y="142" fill="#64748B" fontFamily="monospace" fontSize="11">
         4
       </text>
       <rect x="60" y="133" width="44" height="10" rx="4" fill="#60A5FA" />
-      <rect x="110" y="133" width="128" height="10" rx="4" fill="#A78BFA" />
+      <rect x="110" y="133" width="128" height="10" rx="4" fill="#93C5FD" />
 
       {/* Inline Console Output Box */}
       <rect
@@ -123,14 +123,14 @@ export function CodeLabIllustration({ className = "" }: { className?: string }) 
         width="158"
         height="72"
         rx="12"
-        fill="#1E1B4B"
-        stroke="#8B5CF6"
+        fill="#0F172A"
+        stroke="#4B8BBE"
         strokeWidth="1.5"
       />
       <circle cx="320" cy="98" r="14" fill="url(#codelab-accent)" />
       <path d="M316 93L326 98L316 103V93Z" fill="#FFFFFF" />
       <rect x="344" y="84" width="88" height="10" rx="4" fill="#F8FAFC" />
-      <rect x="344" y="102" width="64" height="8" rx="4" fill="#A78BFA" />
+      <rect x="344" y="102" width="64" height="8" rx="4" fill="#93C5FD" />
 
       {/* Test Verification Floating Card */}
       <rect
@@ -181,44 +181,44 @@ export function AiTutorIllustration({ className = "" }: { className?: string }) 
           y2="280"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0%" stopColor="#F5F3FF" />
-          <stop offset="100%" stopColor="#EDE9FE" />
+          <stop offset="0%" stopColor="#F8FAFC" />
+          <stop offset="100%" stopColor="#EBF3F9" />
         </linearGradient>
         <linearGradient id="tutor-orb" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#7C3AED" />
-          <stop offset="100%" stopColor="#4C1D95" />
+          <stop offset="0%" stopColor="#4B8BBE" />
+          <stop offset="100%" stopColor="#306998" />
         </linearGradient>
       </defs>
 
       <rect width="480" height="280" rx="20" fill="url(#tutor-bg)" />
 
       {/* Decorative Concentric Orbit Rings */}
-      <circle cx="112" cy="140" r="74" stroke="#C4B5FD" strokeWidth="1.5" strokeDasharray="5 5" />
-      <circle cx="112" cy="140" r="52" fill="#DDD6FE" fillOpacity="0.55" />
+      <circle cx="112" cy="140" r="74" stroke="#93C5FD" strokeWidth="1.5" strokeDasharray="5 5" />
+      <circle cx="112" cy="140" r="52" fill="#DBEAFE" fillOpacity="0.6" />
 
       {/* Central AI Mentor Core */}
       <circle cx="112" cy="140" r="34" fill="url(#tutor-orb)" />
       <path
         d="M112 121L116.5 133.5L129 138L116.5 142.5L112 155L107.5 142.5L95 138L107.5 133.5L112 121Z"
-        fill="#FDE68A"
+        fill="#FFD43B"
       />
 
       {/* Connection Pathways */}
       <path
         d="M146 126C178 126 184 74 214 74"
-        stroke="#7C3AED"
+        stroke="#306998"
         strokeWidth="2"
         strokeLinecap="round"
       />
       <path
         d="M146 140C178 140 184 140 214 140"
-        stroke="#7C3AED"
+        stroke="#306998"
         strokeWidth="2"
         strokeLinecap="round"
       />
       <path
         d="M146 154C178 154 184 208 214 208"
-        stroke="#7C3AED"
+        stroke="#306998"
         strokeWidth="2"
         strokeLinecap="round"
       />
@@ -231,13 +231,13 @@ export function AiTutorIllustration({ className = "" }: { className?: string }) 
         height="58"
         rx="12"
         fill="#FFFFFF"
-        stroke="#DDD6FE"
+        stroke="#CBD5E1"
         strokeWidth="1.5"
       />
-      <circle cx="240" cy="71" r="12" fill="#F3E8FF" />
-      <circle cx="240" cy="71" r="5" fill="#7C3AED" />
-      <rect x="262" y="59" width="124" height="9" rx="4.5" fill="#1E1B4B" />
-      <rect x="262" y="75" width="162" height="7" rx="3.5" fill="#94A3B8" />
+      <circle cx="240" cy="71" r="12" fill="#EBF3F9" />
+      <circle cx="240" cy="71" r="5" fill="#306998" />
+      <rect x="262" y="59" width="124" height="9" rx="4.5" fill="#0F172A" />
+      <rect x="262" y="75" width="162" height="7" rx="3.5" fill="#64748B" />
 
       {/* Card 2: Socratic Hint Generation */}
       <rect
@@ -246,14 +246,14 @@ export function AiTutorIllustration({ className = "" }: { className?: string }) 
         width="236"
         height="58"
         rx="12"
-        fill="#1E1B4B"
-        stroke="#6D28D9"
+        fill="#0F172A"
+        stroke="#306998"
         strokeWidth="1.5"
       />
-      <circle cx="240" cy="140" r="12" fill="#F59E0B" fillOpacity="0.2" />
-      <circle cx="240" cy="140" r="5" fill="#FBBF24" />
+      <circle cx="240" cy="140" r="12" fill="#FFD43B" fillOpacity="0.2" />
+      <circle cx="240" cy="140" r="5" fill="#FFD43B" />
       <rect x="262" y="128" width="142" height="9" rx="4.5" fill="#F8FAFC" />
-      <rect x="262" y="144" width="168" height="7" rx="3.5" fill="#C4B5FD" />
+      <rect x="262" y="144" width="168" height="7" rx="3.5" fill="#93C5FD" />
 
       {/* Card 3: Line-by-Line Code Verification */}
       <rect
@@ -263,7 +263,7 @@ export function AiTutorIllustration({ className = "" }: { className?: string }) 
         height="58"
         rx="12"
         fill="#FFFFFF"
-        stroke="#DDD6FE"
+        stroke="#CBD5E1"
         strokeWidth="1.5"
       />
       <circle cx="240" cy="209" r="12" fill="#DCFCE7" />
@@ -274,7 +274,7 @@ export function AiTutorIllustration({ className = "" }: { className?: string }) 
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <rect x="262" y="197" width="132" height="9" rx="4.5" fill="#1E1B4B" />
+      <rect x="262" y="197" width="132" height="9" rx="4.5" fill="#0F172A" />
       <rect x="262" y="213" width="150" height="7" rx="3.5" fill="#64748B" />
     </svg>
   );
@@ -293,47 +293,47 @@ export function TrackLevelEmblem({
   if (level === "Beginner") {
     return (
       <svg viewBox="0 0 44 44" fill="none" className={className} aria-hidden="true">
-        <rect width="44" height="44" rx="12" fill="#F3E8FF" />
-        <rect x="10" y="24" width="6" height="10" rx="2" fill="#7C3AED" />
-        <rect x="19" y="18" width="6" height="16" rx="2" fill="#A78BFA" />
-        <rect x="28" y="12" width="6" height="22" rx="2" fill="#DDD6FE" />
+        <rect width="44" height="44" rx="12" fill="#EBF3F9" />
+        <rect x="10" y="24" width="6" height="10" rx="2" fill="#306998" />
+        <rect x="19" y="18" width="6" height="16" rx="2" fill="#93C5FD" />
+        <rect x="28" y="12" width="6" height="22" rx="2" fill="#CBD5E1" />
       </svg>
     );
   }
   if (level === "Intermediate") {
     return (
       <svg viewBox="0 0 44 44" fill="none" className={className} aria-hidden="true">
-        <rect width="44" height="44" rx="12" fill="#EDE9FE" />
-        <rect x="10" y="24" width="6" height="10" rx="2" fill="#6D28D9" />
-        <rect x="19" y="18" width="6" height="16" rx="2" fill="#6D28D9" />
-        <rect x="28" y="12" width="6" height="22" rx="2" fill="#C4B5FD" />
+        <rect width="44" height="44" rx="12" fill="#DBEAFE" />
+        <rect x="10" y="24" width="6" height="10" rx="2" fill="#306998" />
+        <rect x="19" y="18" width="6" height="16" rx="2" fill="#306998" />
+        <rect x="28" y="12" width="6" height="22" rx="2" fill="#93C5FD" />
       </svg>
     );
   }
   return (
     <svg viewBox="0 0 44 44" fill="none" className={className} aria-hidden="true">
-      <rect width="44" height="44" rx="12" fill="#1E1B4B" />
-      <rect x="10" y="24" width="6" height="10" rx="2" fill="#A78BFA" />
-      <rect x="19" y="18" width="6" height="16" rx="2" fill="#8B5CF6" />
-      <rect x="28" y="12" width="6" height="22" rx="2" fill="#FBBF24" />
+      <rect width="44" height="44" rx="12" fill="#0F172A" />
+      <rect x="10" y="24" width="6" height="10" rx="2" fill="#60A5FA" />
+      <rect x="19" y="18" width="6" height="16" rx="2" fill="#306998" />
+      <rect x="28" y="12" width="6" height="22" rx="2" fill="#FFD43B" />
     </svg>
   );
 }
 
 /**
- * Split-screen executive brand panel for Login, Signup, and Reset Password pages
+ * Split-screen executive brand panel for the Get Started Google Auth page
  */
 export function AuthBrandShowcase() {
   return (
-    <div className="relative hidden lg:flex lg:flex-col lg:justify-between overflow-hidden rounded-3xl bg-[#1E1B4B] p-10 text-white shadow-xl">
+    <div className="relative hidden lg:flex lg:flex-col lg:justify-between overflow-hidden rounded-3xl bg-[#0F172A] p-10 text-white shadow-xl border border-slate-800">
       {/* Subtle radial glow */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full bg-purple-500/20 blur-3xl"
+        className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full bg-[#306998]/30 blur-3xl"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl"
+        className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-[#FFD43B]/10 blur-3xl"
       />
 
       <div className="relative z-10 space-y-6">
@@ -346,15 +346,15 @@ export function AuthBrandShowcase() {
           />
           <div>
             <div className="text-lg font-extrabold tracking-tight text-white">NaomiLearn</div>
-            <div className="text-xs font-medium text-purple-200">Python &amp; AI Academy</div>
+            <div className="text-xs font-medium text-sky-200">Python &amp; AI Academy</div>
           </div>
         </Link>
 
         <div className="space-y-3 pt-2">
           <h2 className="text-2xl font-extrabold tracking-tight text-white leading-snug">
-            Learn Python. Master AI. Build Your Future.
+            Learn Python. Build your future.
           </h2>
-          <p className="text-sm leading-relaxed text-purple-100/85">
+          <p className="text-sm leading-relaxed text-slate-300">
             Work through 24 structured modules from Beginner to Advanced, execute real Python 3 in
             the browser Code Lab, and receive Socratic coaching from your personal AI Tutor.
           </p>
@@ -372,33 +372,33 @@ export function AuthBrandShowcase() {
 
         <div className="grid grid-cols-2 gap-3 pt-1 text-xs">
           <div className="rounded-xl border border-white/10 bg-white/5 p-3.5">
-            <div className="flex items-center gap-2 font-bold text-purple-200">
-              <Code2 className="h-4 w-4 text-purple-300" />
+            <div className="flex items-center gap-2 font-bold text-sky-200">
+              <Code2 className="h-4 w-4 text-sky-300" />
               24 Hands-On Modules
             </div>
-            <p className="mt-1 text-purple-100/75">
+            <p className="mt-1 text-slate-300/80">
               Beginner, Intermediate &amp; Advanced tracks with live checkpoints.
             </p>
           </div>
           <div className="rounded-xl border border-white/10 bg-white/5 p-3.5">
-            <div className="flex items-center gap-2 font-bold text-purple-200">
-              <Sparkles className="h-4 w-4 text-amber-300" />
+            <div className="flex items-center gap-2 font-bold text-sky-200">
+              <Sparkles className="h-4 w-4 text-[#FFD43B]" />
               Socratic AI Tutor
             </div>
-            <p className="mt-1 text-purple-100/75">
+            <p className="mt-1 text-slate-300/80">
               Step-by-step hints, code reviews, and adaptive topic quizzes.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-5 text-xs text-purple-200/80">
+      <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-5 text-xs text-slate-300">
         <span className="flex items-center gap-1.5">
           <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-          Instant Guest Access Available
+          Cloud-Synced Progress via Google OAuth
         </span>
         <span className="flex items-center gap-1.5 font-mono">
-          <Terminal className="h-3.5 w-3.5 text-purple-300" />
+          <Terminal className="h-3.5 w-3.5 text-sky-300" />
           Python 3 · Pyodide
         </span>
       </div>
@@ -428,13 +428,13 @@ export function MasteryProgressGraphic({
     {
       label: "02. Intermediate Engineering",
       pct: intermediatePct,
-      color: "bg-accent",
+      color: "bg-[#234E73]",
       modules: "Modules 9–16",
     },
     {
       label: "03. Advanced & AI Systems",
       pct: advancedPct,
-      color: "bg-[#1E1B4B]",
+      color: "bg-[#0F172A]",
       modules: "Modules 17–24",
     },
   ];

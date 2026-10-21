@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Home,
@@ -9,13 +9,15 @@ import {
   Sparkles,
   BarChart3,
   Settings,
-  LogIn,
+  LogOut,
   Flame,
   Target,
+  UserCheck,
 } from "lucide-react";
 
-import naomiLogo from "@/assets/naomilearn-logo.png";
+import { NaomiLearnLogo } from "@/components/naomilearn-logo";
 import { CURRICULUM_LESSONS } from "@/lib/curriculum";
+import { useAuth } from "@/lib/auth";
 import { loadCompletedLessons, getStreak, getTodayCount, loadDailyGoal } from "@/lib/tutor";
 import {
   Sidebar,
@@ -46,11 +48,13 @@ const accountItems = [
 ];
 
 export function AppSidebar() {
+  const navigate = useNavigate();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const currentPath = useRouterState({
     select: (router) => router.location.pathname,
   });
+  const { displayName, email, signOut } = useAuth();
 
   const [completedCount, setCompletedCount] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -75,26 +79,16 @@ export function AppSidebar() {
   const isActive = (path: string, exact?: boolean) =>
     exact ? currentPath === path : currentPath.startsWith(path);
 
+  const handleSignOut = async () => {
+    await signOut();
+    await navigate({ to: "/" });
+  };
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <Link to="/" className="flex items-center gap-2.5 px-2 py-2.5">
-          <img
-            src={naomiLogo}
-            alt="NaomiLearn logo"
-            referrerPolicy="no-referrer"
-            className="h-8 w-8 shrink-0 rounded-lg border border-border object-cover shadow-2xs"
-          />
-          {!collapsed && (
-            <div className="leading-tight">
-              <div className="text-sm font-extrabold tracking-tight text-foreground">
-                NaomiLearn
-              </div>
-              <div className="text-[11px] font-medium text-muted-foreground">
-                Python &amp; AI Academy
-              </div>
-            </div>
-          )}
+          <NaomiLearnLogo size="sm" showWordmark={!collapsed} />
         </Link>
       </SidebarHeader>
 
@@ -172,23 +166,35 @@ export function AppSidebar() {
               </div>
             </div>
 
-            <Link
-              to="/login"
-              className="flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary whitespace-nowrap"
-            >
-              <LogIn className="h-3.5 w-3.5 text-primary" />
-              Account &amp; Cloud Sync
-            </Link>
+            <div className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 font-bold text-foreground truncate">
+                  <UserCheck className="h-3.5 w-3.5 shrink-0 text-primary" />
+                  <span className="truncate">{displayName || "Google Student"}</span>
+                </div>
+                {email && <div className="truncate text-[11px] text-muted-foreground">{email}</div>}
+              </div>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                title="Sign Out"
+                aria-label="Sign Out"
+                className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground shrink-0"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         ) : (
-          <Link
-            to="/login"
-            title="Account & Cloud Sync"
-            aria-label="Account and Cloud Sync"
-            className="flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"
+          <button
+            type="button"
+            onClick={handleSignOut}
+            title="Sign Out"
+            aria-label="Sign Out"
+            className="flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
-            <LogIn className="h-4 w-4" />
-          </Link>
+            <LogOut className="h-4 w-4" />
+          </button>
         )}
       </SidebarFooter>
     </Sidebar>

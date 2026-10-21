@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Settings as SettingsIcon,
@@ -8,7 +8,6 @@ import {
   RotateCcw,
   CheckCircle2,
   LogOut,
-  LogIn,
 } from "lucide-react";
 import {
   loadName,
@@ -21,7 +20,7 @@ import {
   syncProgressToSupabase,
 } from "@/lib/tutor";
 import type { LearningLevel } from "@/lib/curriculum";
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -30,7 +29,7 @@ export const Route = createFileRoute("/settings")({
       {
         name: "description",
         content:
-          "Configure your NaomiLearn student display name, preferred Python track, daily learning goal, and Supabase cloud sync.",
+          "Configure your NaomiLearn student display name, preferred Python track, daily learning goal, and Google cloud sync.",
       },
       { property: "og:title", content: "Account & Settings — NaomiLearn" },
     ],
@@ -39,38 +38,20 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
+  const navigate = useNavigate();
+  const { email: userEmail, displayName, signOut } = useAuth();
   const [name, setName] = useState("");
   const [level, setLevel] = useState<LearningLevel>("Beginner");
   const [dailyGoal, setDailyGoal] = useState(5);
   const [savedBanner, setSavedBanner] = useState("");
   const [syncStatus, setSyncStatus] = useState("");
-  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
 
   useEffect(() => {
-    setName(loadName());
+    setName(loadName() || displayName);
     setLevel(loadPreferredLevel());
     setDailyGoal(loadDailyGoal());
-
-    if (isSupabaseConfigured) {
-      supabase.auth
-        .getSession()
-        .then(({ data }) => {
-          const sessionUser = data.session?.user;
-          if (sessionUser) {
-            setUserEmail(sessionUser.email ?? null);
-            const fullName = sessionUser.user_metadata?.["full_name"];
-            if (typeof fullName === "string" && fullName && !loadName()) {
-              setName(fullName);
-              saveName(fullName);
-            }
-          }
-        })
-        .catch(() => {
-          // Ignore session fetch errors when offline
-        });
-    }
-  }, []);
+  }, [displayName]);
 
   const handleSavePreferences = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,10 +60,8 @@ function SettingsPage() {
     saveDailyGoal(dailyGoal);
     setSavedBanner("Your learning preferences have been saved.");
 
-    if (isSupabaseConfigured && userEmail) {
-      const res = await syncProgressToSupabase();
-      setSyncStatus(res.message);
-    }
+    const res = await syncProgressToSupabase();
+    setSyncStatus(res.message);
   };
 
   const handleCloudSync = async () => {
@@ -91,10 +70,8 @@ function SettingsPage() {
   };
 
   const handleSignOut = async () => {
-    if (!isSupabaseConfigured) return;
-    await supabase.auth.signOut();
-    setUserEmail(null);
-    setSyncStatus("Signed out of cloud account. Local progress remains active.");
+    await signOut();
+    await navigate({ to: "/" });
   };
 
   const handleResetProgress = () => {
@@ -111,8 +88,8 @@ function SettingsPage() {
           Account &amp; Learning Settings
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Personalize your student profile, default Python track, daily activity goal, and cloud
-          account connection.
+          Personalize your student profile, default Python track, daily activity goal, and Google
+          cloud sync.
         </p>
       </div>
 
@@ -129,7 +106,7 @@ function SettingsPage() {
       {/* Profile & Learning Preferences Form */}
       <form
         onSubmit={handleSavePreferences}
-        className="rounded-2xl border border-border bg-card p-6 space-y-5"
+        className="rounded-2xl border border-border bg-card p-6 space-y-5 shadow-2xs"
       >
         <h2 className="flex items-center gap-2 text-base font-bold text-foreground">
           <User className="h-4 w-4 text-primary" />
@@ -211,75 +188,50 @@ function SettingsPage() {
         <div className="pt-2">
           <button
             type="submit"
-            className="rounded-xl bg-primary px-5 py-2.5 text-xs sm:text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 whitespace-nowrap"
+            className="rounded-xl bg-primary px-5 py-2.5 text-xs sm:text-sm font-bold text-primary-foreground transition-colors hover:bg-accent whitespace-nowrap"
           >
             Save Preferences
           </button>
         </div>
       </form>
 
-      {/* Cloud Account & Supabase Sync Section */}
-      <section className="rounded-2xl border border-border bg-card p-6 space-y-4">
+      {/* Google Cloud Account & Supabase Sync Section */}
+      <section className="rounded-2xl border border-border bg-card p-6 space-y-4 shadow-2xs">
         <h2 className="flex items-center gap-2 text-base font-bold text-foreground">
           <Cloud className="h-4 w-4 text-primary" />
-          Account Authentication &amp; Cloud Sync
+          Google Account &amp; Cloud Sync
         </h2>
 
-        {userEmail ? (
-          <div className="space-y-3">
-            <p className="text-sm text-foreground">
-              Signed in as <strong className="font-mono text-primary">{userEmail}</strong>
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={handleCloudSync}
-                className="inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-2 text-xs font-semibold text-secondary-foreground hover:bg-primary hover:text-primary-foreground whitespace-nowrap"
-              >
-                <Cloud className="h-4 w-4" />
-                Sync Progress to Cloud Now
-              </button>
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary whitespace-nowrap"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </button>
-            </div>
+        <div className="space-y-3">
+          <p className="text-sm text-foreground">
+            Authenticated via Google OAuth as{" "}
+            <strong className="font-mono text-primary">{userEmail || displayName}</strong>
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleCloudSync}
+              className="inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-2 text-xs font-semibold text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground whitespace-nowrap"
+            >
+              <Cloud className="h-4 w-4" />
+              Sync Progress to Cloud Now
+            </button>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary whitespace-nowrap"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </button>
           </div>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              You are currently using NaomiLearn in{" "}
-              <strong className="text-foreground">Instant Guest Mode</strong> (all progress is saved
-              automatically in your browser). Sign in or create an account to link your progress to
-              your profile.
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                to="/login"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 whitespace-nowrap"
-              >
-                <LogIn className="h-4 w-4" />
-                Sign In
-              </Link>
-              <Link
-                to="/signup"
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-secondary px-4 py-2 text-xs font-semibold text-secondary-foreground hover:bg-secondary/80 whitespace-nowrap"
-              >
-                Create Account
-              </Link>
-            </div>
-          </div>
-        )}
+        </div>
 
         {syncStatus && <p className="text-xs font-medium text-primary">{syncStatus}</p>}
       </section>
 
       {/* Reset Local Progress */}
-      <section className="rounded-2xl border border-border bg-card p-6 space-y-3">
+      <section className="rounded-2xl border border-border bg-card p-6 space-y-3 shadow-2xs">
         <h2 className="flex items-center gap-2 text-base font-bold text-foreground">
           <RotateCcw className="h-4 w-4 text-destructive" />
           Reset Learning History

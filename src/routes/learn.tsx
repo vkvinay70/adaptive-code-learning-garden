@@ -200,7 +200,22 @@ function LearnPage() {
       {/* Main Split Workspace: Module List (Left) + Lesson Reader (Right) */}
       <div className="mt-6 grid gap-6 lg:grid-cols-12 items-start">
         {/* Left Sidebar: 8 Modules in Selected Level */}
-        <aside className="lg:col-span-4 space-y-2.5">
+        <aside className="lg:col-span-4 space-y-3">
+          <div className="overflow-hidden rounded-xl border border-border bg-[#0F172A]">
+            <img
+              src={
+                selectedLevel === "Beginner"
+                  ? "/assets/aistudio/31e1ad6a2e5ec38cc9a838027e98601e_b85f6a08.jpg"
+                  : selectedLevel === "Intermediate"
+                    ? "/assets/aistudio/173ee0eb290de65a6797e654d3040586_9ef4af1c.jpg"
+                    : "/assets/aistudio/ac14867d03e8c386ace5cecb7df31f8e_8406eee2.jpg"
+              }
+              alt={`${selectedLevel} Python track illustration`}
+              referrerPolicy="no-referrer"
+              className="h-32 w-full object-cover block"
+            />
+          </div>
+
           <div className="flex items-center justify-between px-1 text-xs font-semibold text-muted-foreground">
             <span>{selectedLevel} Modules</span>
             <span className="font-mono tabular-nums">

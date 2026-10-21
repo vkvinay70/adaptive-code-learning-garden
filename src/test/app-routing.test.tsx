@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { routeTree } from "@/routeTree.gen";
 import { CURRICULUM_LESSONS, CURATED_QUIZ_BANK, getLessonsByLevel } from "@/lib/curriculum";
 import { analyze } from "@/lib/tutor";
+import { NaomiLearnLogo, NAOMILEARN_LOGO_SRC } from "@/components/naomilearn-logo";
 
 describe("App routing & NaomiLearn curriculum", () => {
   const routesToVerify = [
@@ -72,5 +73,12 @@ describe("App routing & NaomiLearn curriculum", () => {
     expect(result.strong).toContain("Variables & Data Types");
     expect(result.weak).toContain("Loops");
     expect(result.recommended).toBe("Loops");
+  });
+
+  it("exports the official NaomiLearnLogo component using the uploaded brand logo", () => {
+    expect(typeof NaomiLearnLogo).toBe("function");
+    expect(NAOMILEARN_LOGO_SRC).toBe("/assets/aistudio/image_da4a217c.png");
+    const element = NaomiLearnLogo({ size: "md", showWordmark: true });
+    expect(element).toBeTruthy();
   });
 });

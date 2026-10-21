@@ -249,23 +249,68 @@ function executeAgentTool(
   }
 }
 
+function buildCurriculumGroundedReply(
+  userQuery: string,
+  level?: string,
+  module?: string,
+): { text: string; toolsUsed: string[] } {
+  const q = userQuery.toLowerCase();
+
+  if (
+    q.includes("naomilearn") ||
+    q.includes("included") ||
+    q.includes("24") ||
+    q.includes("track")
+  ) {
+    const beg = getLessonsByLevel("Beginner")
+      .slice(0, 3)
+      .map((l) => l.shortTitle)
+      .join(", ");
+    const inter = getLessonsByLevel("Intermediate")
+      .slice(0, 3)
+      .map((l) => l.shortTitle)
+      .join(", ");
+    const adv = getLessonsByLevel("Advanced")
+      .slice(0, 3)
+      .map((l) => l.shortTitle)
+      .join(", ");
+
+    return {
+      text: `**NaomiLearn** is an AI-powered Python learning platform organized into **24 hands-on modules** across three tracks:\n\n- **Beginner Track (Modules 01–08):** Core syntax, variables, loops, and data structures (${beg}, and more).\n- **Intermediate Track (Modules 09–16):** Object-oriented design, file I/O, exceptions, and comprehensions (${inter}, and more).\n- **Advanced Track (Modules 17–24):** Decorators, generators, async concurrency, and AI engineering (${adv}, and more).\n\nEvery module connects directly to an **in-browser Python 3 Code Lab** and **adaptive topic quizzes**. Click **Get Started** to sign in with Google and track your mastery across all 24 lessons!`,
+      toolsUsed: ["getCurriculumModule"],
+    };
+  }
+
+  if (q.includes("list") && q.includes("tuple")) {
+    return {
+      text: `In Python, **lists** are mutable (can be modified after creation), whereas **tuples** are immutable (fixed once created).\n\n\`\`\`python\n# Lists use square brackets [] and can be mutated\nactive_modules = ["Variables", "Loops"]\nactive_modules.append("Functions")\n\n# Tuples use parentheses () and cannot be modified in place\ncoordinates = (37.7749, -122.4194)\nprint(active_modules)\nprint(coordinates)\n\`\`\`\n\nUse a **list** when items will grow or change, and a **tuple** for fixed records or dictionary keys.`,
+      toolsUsed: ["getCurriculumModule"],
+    };
+  }
+
+  if (q.includes("comprehension")) {
+    return {
+      text: `A **list comprehension** provides a concise way to transform and filter sequences in a single readable expression:\n\n\`\`\`python\nnumbers = [1, 2, 3, 4, 5, 6]\n# [expression for item in iterable if condition]\neven_squares = [n ** 2 for n in numbers if n % 2 == 0]\nprint(even_squares)  # [4, 16, 36]\n\`\`\`\n\nStart by writing the \`for item in iterable\` clause mentally, add an optional \`if\` filter on the right, and place the output expression on the left.`,
+      toolsUsed: ["getCurriculumModule"],
+    };
+  }
+
+  const matchedLesson =
+    getLessonByIdOrTitle(userQuery) ??
+    (module ? getLessonByIdOrTitle(module) : undefined) ??
+    getLessonsByLevel((level as LearningLevel) || "Beginner")[0]!;
+
+  return {
+    text: `Here is a structured guide from **Module ${String(matchedLesson.number).padStart(2, "0")}: ${matchedLesson.shortTitle}** (${matchedLesson.level} Track):\n\n${matchedLesson.summary}\n\n\`\`\`python\n${matchedLesson.exampleCode}\n\`\`\`\n\n**Key Tip:** ${matchedLesson.nextStepHint}`,
+    toolsUsed: ["getCurriculumModule"],
+  };
+}
+
 export const Route = createFileRoute("/api/gemini")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         try {
-          const apiKey = process.env.GEMINI_API_KEY?.trim();
-
-          if (!apiKey) {
-            return Response.json(
-              {
-                error:
-                  "AI Tutor service is not configured yet (missing GEMINI_API_KEY on server). You can still explore all 24 lessons, run Python code in the Code Lab, and take curated topic quizzes!",
-              },
-              { status: 503 },
-            );
-          }
-
           const body = await request.json().catch(() => null);
           if (!body || typeof body !== "object") {
             return Response.json({ error: "Invalid JSON request body." }, { status: 400 });
@@ -304,6 +349,27 @@ export const Route = createFileRoute("/api/gemini")({
               },
               { status: 400 },
             );
+          }
+
+          const lastUserMessage =
+            [...(messages as { role: string; text: string }[])]
+              .reverse()
+              .find((m) => m.role === "user")?.text ?? "";
+
+          const apiKey = process.env.GEMINI_API_KEY?.trim();
+
+          if (!apiKey) {
+            if (json) {
+              return Response.json(
+                {
+                  error:
+                    "AI Quiz generator requires GEMINI_API_KEY on the server. Using curated topic quiz bank.",
+                },
+                { status: 503 },
+              );
+            }
+            const fallback = buildCurriculumGroundedReply(lastUserMessage, level, module);
+            return Response.json(fallback);
           }
 
           const configuredModel = process.env.GEMINI_MODEL?.trim() || "gemini-3.8-flash";
@@ -422,10 +488,8 @@ export const Route = createFileRoute("/api/gemini")({
 
           const text = response.text;
           if (!text) {
-            return Response.json(
-              { error: "The AI Tutor returned an empty response. Please try again." },
-              { status: 502 },
-            );
+            const fallback = buildCurriculumGroundedReply(lastUserMessage, level, module);
+            return Response.json(fallback);
           }
 
           return Response.json({

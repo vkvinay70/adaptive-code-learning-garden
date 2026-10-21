@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
 import {
   BookOpen,
   Code2,
@@ -30,11 +29,13 @@ import {
   saveName,
   loadCompletedLessons,
   recordActivity,
+  persistTutorExchangeToSupabase,
   type Msg,
   type Stats,
   type CompletedLessonRecord,
 } from "@/lib/tutor";
 import type { LearningLevel } from "@/lib/curriculum";
+import { MarkdownMessage } from "@/components/markdown-message";
 
 export const Route = createFileRoute("/tutor")({
   validateSearch: (search: Record<string, unknown>): { module?: string; level?: LearningLevel } => {
@@ -199,6 +200,14 @@ Teaching Guidelines:
           },
         ],
       }));
+
+      void persistTutorExchangeToSupabase({
+        module,
+        level,
+        userPrompt: trimmed,
+        modelReply: reply,
+        toolsUsed: res.toolsUsed,
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to get an AI Tutor response.");
     } finally {
@@ -208,13 +217,12 @@ Teaching Guidelines:
 
   const handleRetryLast = () => {
     if (!lastSubmittedPrompt || loading) return;
-    // Remove last user message if it didn't get a model response, then resend
     const currentList = chats[chatKey] ?? [];
     if (currentList.length > 0 && currentList[currentList.length - 1]?.role === "user") {
       const trimmedHistory = currentList.slice(0, -1);
       setChats((c) => ({ ...c, [chatKey]: trimmedHistory }));
     }
-    send(lastSubmittedPrompt);
+    void send(lastSubmittedPrompt);
   };
 
   const handleClearChat = () => {
@@ -258,7 +266,7 @@ Teaching Guidelines:
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 space-y-5">
       {/* Context Setup Toolbar */}
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3.5">
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3.5 shadow-2xs">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
           <span className="text-sm font-extrabold text-foreground">AI Python Tutor Agent</span>
@@ -312,7 +320,7 @@ Teaching Guidelines:
 
       {/* Main Split: Chat Canvas (Left) + Student Context & Next Step Panel (Right) */}
       <div className="grid gap-6 lg:grid-cols-[1fr_320px] items-start">
-        <section className="flex min-h-[72vh] flex-col rounded-2xl border border-border bg-card overflow-hidden">
+        <section className="flex min-h-[72vh] flex-col rounded-2xl border border-border bg-card overflow-hidden shadow-2xs">
           {/* Chat Messages Viewport */}
           <div className="flex-1 space-y-4 overflow-y-auto p-5 sm:p-6">
             {messages.length === 0 && (
@@ -337,8 +345,8 @@ Teaching Guidelines:
                       key={qa.label}
                       type="button"
                       disabled={loading}
-                      onClick={() => send(qa.prompt)}
-                      className="flex items-center gap-2.5 rounded-xl border border-border bg-background/70 p-3 text-xs font-semibold text-foreground transition-colors hover:border-primary hover:bg-secondary/50 disabled:opacity-50"
+                      onClick={() => void send(qa.prompt)}
+                      className="flex items-center gap-2.5 rounded-xl border border-border bg-background/70 p-3 text-xs font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-secondary/50 disabled:opacity-50"
                     >
                       <qa.icon className="h-4 w-4 shrink-0 text-primary" />
                       <span>{qa.label}</span>
@@ -358,7 +366,7 @@ Teaching Guidelines:
                     {m.text}
                   </div>
                 ) : (
-                  <div className="max-w-[92%] rounded-2xl border border-border bg-background/60 p-4 sm:p-5 space-y-2.5">
+                  <div className="max-w-[92%] rounded-2xl border border-border bg-background/70 p-4 sm:p-5 space-y-2.5">
                     {m.toolsUsed && m.toolsUsed.length > 0 && (
                       <div className="flex flex-wrap items-center gap-2 border-b border-border pb-2 text-[11px] font-semibold text-primary">
                         <Wrench className="h-3.5 w-3.5" />
@@ -367,9 +375,7 @@ Teaching Guidelines:
                         </span>
                       </div>
                     )}
-                    <div className="prose-tutor text-sm text-foreground">
-                      <ReactMarkdown>{m.text}</ReactMarkdown>
-                    </div>
+                    <MarkdownMessage content={m.text} />
                   </div>
                 )}
               </div>
@@ -411,7 +417,7 @@ Teaching Guidelines:
                 <button
                   key={qa.label}
                   type="button"
-                  onClick={() => send(qa.prompt)}
+                  onClick={() => void send(qa.prompt)}
                   disabled={loading}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary disabled:opacity-50 whitespace-nowrap"
                 >
@@ -429,7 +435,7 @@ Teaching Guidelines:
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    send(input);
+                    void send(input);
                   }
                 }}
                 placeholder="Ask a Python question, paste code for debugging, or request a step-by-step explanation… (Enter to send, Shift+Enter for new line)"
@@ -438,9 +444,9 @@ Teaching Guidelines:
 
               <button
                 type="button"
-                onClick={() => send(input)}
+                onClick={() => void send(input)}
                 disabled={loading || !input.trim()}
-                className="inline-flex items-center justify-center rounded-xl bg-primary px-4 text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-xl bg-primary px-4 text-primary-foreground transition-colors hover:bg-accent disabled:opacity-50"
                 aria-label="Send message to AI Tutor"
               >
                 <Send className="h-4 w-4" />
@@ -451,7 +457,7 @@ Teaching Guidelines:
 
         {/* Right Context Panel: Progress, Strengths, Weaknesses & Recommended Lesson */}
         <aside className="space-y-4">
-          <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-2xs">
             <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
               <Target className="h-4 w-4 text-primary" />
               Your Recorded Progress
@@ -496,7 +502,7 @@ Teaching Guidelines:
             empty="No weak modules flagged."
           />
 
-          <div className="rounded-2xl border border-primary/30 bg-card p-5 space-y-3">
+          <div className="rounded-2xl border border-primary/30 bg-card p-5 space-y-3 shadow-2xs">
             <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
               <Compass className="h-4 w-4 text-primary" />
               Recommended Next Step
@@ -512,11 +518,11 @@ Teaching Guidelines:
                 type="button"
                 onClick={() => {
                   setModule(a.recommended);
-                  send(
+                  void send(
                     `Teach me "${a.recommended}" at ${level} level with an example and a quick practice question.`,
                   );
                 }}
-                className="w-full rounded-xl bg-primary py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+                className="w-full rounded-xl bg-primary py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-accent"
               >
                 Study {a.recommended} Now
               </button>
@@ -548,7 +554,7 @@ function StatusList({
   empty: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-2xs">
       <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-foreground">
         <Icon className={`h-4 w-4 ${tone}`} />
         {title}
