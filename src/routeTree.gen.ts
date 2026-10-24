@@ -10,15 +10,27 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as LearnRouteImport } from './routes/learn'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PracticeRouteImport } from './routes/practice'
+import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as QuizzesRouteImport } from './routes/quizzes'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as TutorRouteImport } from './routes/tutor'
 import { Route as ApiGeminiRouteImport } from './routes/api.gemini'
+import { Route as ApiPythonRouteImport } from './routes/api.python'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LearnRoute = LearnRouteImport.update({
@@ -26,14 +38,39 @@ const LearnRoute = LearnRouteImport.update({
   path: '/learn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PracticeRoute = PracticeRouteImport.update({
   id: '/practice',
   path: '/practice',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProgressRoute = ProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QuizzesRoute = QuizzesRouteImport.update({
   id: '/quizzes',
   path: '/quizzes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TutorRoute = TutorRouteImport.update({
@@ -46,55 +83,120 @@ const ApiGeminiRoute = ApiGeminiRouteImport.update({
   path: '/api/gemini',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPythonRoute = ApiPythonRouteImport.update({
+  id: '/api/python',
+  path: '/api/python',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/learn': typeof LearnRoute
+  '/login': typeof LoginRoute
   '/practice': typeof PracticeRoute
+  '/progress': typeof ProgressRoute
   '/quizzes': typeof QuizzesRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
+  '/signup': typeof SignupRoute
   '/tutor': typeof TutorRoute
   '/api/gemini': typeof ApiGeminiRoute
+  '/api/python': typeof ApiPythonRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/learn': typeof LearnRoute
+  '/login': typeof LoginRoute
   '/practice': typeof PracticeRoute
+  '/progress': typeof ProgressRoute
   '/quizzes': typeof QuizzesRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
+  '/signup': typeof SignupRoute
   '/tutor': typeof TutorRoute
   '/api/gemini': typeof ApiGeminiRoute
+  '/api/python': typeof ApiPythonRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/learn': typeof LearnRoute
+  '/login': typeof LoginRoute
   '/practice': typeof PracticeRoute
+  '/progress': typeof ProgressRoute
   '/quizzes': typeof QuizzesRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
+  '/signup': typeof SignupRoute
   '/tutor': typeof TutorRoute
   '/api/gemini': typeof ApiGeminiRoute
+  '/api/python': typeof ApiPythonRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/learn' | '/practice' | '/quizzes' | '/tutor' | '/api/gemini'
+    | '/'
+    | '/dashboard'
+    | '/learn'
+    | '/login'
+    | '/practice'
+    | '/progress'
+    | '/quizzes'
+    | '/reset-password'
+    | '/settings'
+    | '/signup'
+    | '/tutor'
+    | '/api/gemini'
+    | '/api/python'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/learn' | '/practice' | '/quizzes' | '/tutor' | '/api/gemini'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/learn'
+    | '/login'
+    | '/practice'
+    | '/progress'
+    | '/quizzes'
+    | '/reset-password'
+    | '/settings'
+    | '/signup'
+    | '/tutor'
+    | '/api/gemini'
+    | '/api/python'
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
     | '/learn'
+    | '/login'
     | '/practice'
+    | '/progress'
     | '/quizzes'
+    | '/reset-password'
+    | '/settings'
+    | '/signup'
     | '/tutor'
     | '/api/gemini'
+    | '/api/python'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
   LearnRoute: typeof LearnRoute
+  LoginRoute: typeof LoginRoute
   PracticeRoute: typeof PracticeRoute
+  ProgressRoute: typeof ProgressRoute
   QuizzesRoute: typeof QuizzesRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SettingsRoute: typeof SettingsRoute
+  SignupRoute: typeof SignupRoute
   TutorRoute: typeof TutorRoute
   ApiGeminiRoute: typeof ApiGeminiRoute
+  ApiPythonRoute: typeof ApiPythonRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -106,11 +208,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/learn': {
       id: '/learn'
       path: '/learn'
       fullPath: '/learn'
       preLoaderRoute: typeof LearnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/practice': {
@@ -120,11 +236,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PracticeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/progress': {
+      id: '/progress'
+      path: '/progress'
+      fullPath: '/progress'
+      preLoaderRoute: typeof ProgressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/quizzes': {
       id: '/quizzes'
       path: '/quizzes'
       fullPath: '/quizzes'
       preLoaderRoute: typeof QuizzesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tutor': {
@@ -141,16 +285,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGeminiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/python': {
+      id: '/api/python'
+      path: '/api/python'
+      fullPath: '/api/python'
+      preLoaderRoute: typeof ApiPythonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
   LearnRoute: LearnRoute,
+  LoginRoute: LoginRoute,
   PracticeRoute: PracticeRoute,
+  ProgressRoute: ProgressRoute,
   QuizzesRoute: QuizzesRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SettingsRoute: SettingsRoute,
+  SignupRoute: SignupRoute,
   TutorRoute: TutorRoute,
   ApiGeminiRoute: ApiGeminiRoute,
+  ApiPythonRoute: ApiPythonRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

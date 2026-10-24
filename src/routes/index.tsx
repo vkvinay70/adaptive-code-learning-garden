@@ -4,23 +4,22 @@ import {
   ArrowRight,
   BookOpen,
   Code2,
-  ClipboardCheck,
   Sparkles,
   CheckCircle2,
   Terminal,
   Flame,
   TrendingUp,
-  Award,
+  BarChart3,
+  Layers,
+  Cpu,
+  UserCheck,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 import { NaomiLearnLogo } from "@/components/naomilearn-logo";
-import { CURRICULUM_LESSONS, getLessonsByLevel, type LearningLevel } from "@/lib/curriculum";
+import { type LearningLevel } from "@/lib/curriculum";
 import { useAuth } from "@/lib/auth";
-import {
-  CodeLabIllustration,
-  AiTutorIllustration,
-  TrackLevelEmblem,
-} from "@/components/naomi-visuals";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,7 +28,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Learn Python. Build your future. Learn Python with your personal AI tutor across 24 structured modules, an in-browser Python 3 Code Lab, and adaptive quizzes.",
+          "Learn Python. Build your future. Learn Python with your personal AI tutor across structured modules, an in-browser Python 3 Code Lab, and adaptive quizzes.",
       },
       {
         property: "og:title",
@@ -46,120 +45,135 @@ export const Route = createFileRoute("/")({
 
 const HERO_IMAGE_PATH = "/assets/aistudio/NaomiLearn__Neon_Python_AI_Academy_6441544b.png";
 
+function GoogleIcon({ className = "h-4 w-4 shrink-0" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+        fill="#4285F4"
+      />
+      <path
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+        fill="#34A853"
+      />
+      <path
+        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+        fill="#FBBC05"
+      />
+      <path
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+        fill="#EA4335"
+      />
+    </svg>
+  );
+}
+
 const TRACK_CARDS: {
   level: LearningLevel;
-  badge: string;
+  title: string;
   tagline: string;
   description: string;
   outcomes: string[];
-  imagePath: string;
+  featuredTopics: string[];
+  icon: typeof BarChart3;
+  iconBg: string;
+  iconColor: string;
 }[] = [
   {
     level: "Beginner",
-    badge: "Modules 01 – 08",
-    tagline: "Core Python Syntax & Computational Thinking",
-    description:
-      "Start from your very first Python program and master variables, conditionals, loops, dictionaries, and reusable functions.",
+    title: "Beginner Track",
+    tagline: "Python Fundamentals",
+    description: "Start from the basics and build a strong foundation in Python programming.",
     outcomes: [
       "Write clean Python 3 scripts with variables, operators, and f-strings",
       "Control program flow using if/elif/else and for/while loops",
       "Manipulate lists, tuples, sets, and dictionaries with confidence",
     ],
-    imagePath: "/assets/aistudio/31e1ad6a2e5ec38cc9a838027e98601e_b85f6a08.jpg",
+    featuredTopics: [
+      "Variables & Data Types",
+      "Conditionals & Logic",
+      "Loops & Iteration",
+      "Lists & Dictionaries",
+      "Functions & Scope",
+    ],
+    icon: BarChart3,
+    iconBg: "bg-sky-100 dark:bg-sky-950/70",
+    iconColor: "text-sky-600 dark:text-sky-400",
   },
   {
     level: "Intermediate",
-    badge: "Modules 09 – 16",
-    tagline: "Object-Oriented Design, Files & Data Processing",
+    title: "Intermediate Track",
+    tagline: "Applied Python Development",
     description:
-      "Transition from scripts to structured software with file handling, JSON APIs, exception safety, classes, and comprehensions.",
+      "Move from concepts to real-world development with files, data, APIs, and classes.",
     outcomes: [
       "Design modular classes and object-oriented Python architectures",
       "Process structured JSON datasets and handle runtime exceptions safely",
       "Use list/dict comprehensions, iterators, and standard library tools",
     ],
-    imagePath: "/assets/aistudio/173ee0eb290de65a6797e654d3040586_9ef4af1c.jpg",
+    featuredTopics: [
+      "Object-Oriented Programming",
+      "File Handling & JSON",
+      "Exception Handling",
+      "Comprehensions & Generators",
+      "Standard Library Modules",
+    ],
+    icon: Layers,
+    iconBg: "bg-blue-100 dark:bg-blue-950/70",
+    iconColor: "text-blue-600 dark:text-blue-400",
   },
   {
     level: "Advanced",
-    badge: "Modules 17 – 24",
-    tagline: "Async Systems, Algorithms & AI Engineering",
+    title: "Advanced Track",
+    tagline: "Advanced Python & AI Engineering",
     description:
-      "Master production-grade Python with decorators, generators, static type checking, async concurrency, and AI pipeline architecture.",
+      "Master modern Python, async programming, generators, and AI pipeline architecture.",
     outcomes: [
       "Build custom decorators, memory-efficient generators, and async tasks",
       "Analyze algorithmic complexity and optimize performance with caching",
       "Architect end-to-end AI prompt and evaluation pipelines in Python",
     ],
-    imagePath: "/assets/aistudio/ac14867d03e8c386ace5cecb7df31f8e_8406eee2.jpg",
+    featuredTopics: [
+      "Custom Decorators & Metaprogramming",
+      "Asyncio & Concurrency",
+      "Algorithmic Complexity",
+      "Static Typing & Protocols",
+      "AI Pipeline Architecture",
+    ],
+    icon: Cpu,
+    iconBg: "bg-slate-900 dark:bg-slate-800",
+    iconColor: "text-white dark:text-sky-300",
   },
 ];
 
-const CORE_FEATURES: {
-  icon: typeof BookOpen;
-  title: string;
-  description: string;
-  actionLabel: string;
-  targetRoute: "/learn" | "/practice" | "/quizzes" | "/tutor";
-}[] = [
+const CORE_FEATURES = [
   {
     icon: BookOpen,
-    title: "24 Structured Python Lessons",
-    description:
-      "Step-by-step modules spanning Beginner, Intermediate, and Advanced tracks with clear objectives, annotated code, and common pitfalls.",
-    actionLabel: "Browse 24 Modules",
-    targetRoute: "/learn",
+    iconBg: "bg-blue-100 dark:bg-blue-950/70",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    title: "Structured Learning Path",
+    description: "From Python basics to advanced AI concepts with real examples.",
   },
   {
     icon: Code2,
-    title: "In-Browser Python 3 Code Lab",
-    description:
-      "Write and execute real Python 3 code directly in your browser with instant stdout feedback, progressive hints, and automated solution verification.",
-    actionLabel: "Open Code Lab",
-    targetRoute: "/practice",
+    iconBg: "bg-blue-100 dark:bg-blue-950/70",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    title: "Interactive Code Lab",
+    description: "Write, run, and experiment with Python 3 in your browser.",
   },
   {
-    icon: ClipboardCheck,
-    title: "Adaptive Topic Quizzes",
-    description:
-      "Validate your understanding with curated and AI-generated quizzes that explain why each answer is right or wrong.",
-    actionLabel: "Take a Topic Quiz",
-    targetRoute: "/quizzes",
+    icon: CheckCircle2,
+    iconBg: "bg-emerald-100 dark:bg-emerald-950/70",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+    title: "Adaptive Quizzes",
+    description: "Practice with instant feedback and track your understanding.",
   },
   {
     icon: Sparkles,
-    title: "Personal AI Python Tutor",
-    description:
-      "Ask Naomi for Socratic hints, line-by-line code breakdowns, debugging help, or custom exercises tailored to your current level.",
-    actionLabel: "Ask Your AI Tutor",
-    targetRoute: "/tutor",
-  },
-];
-
-const HOW_IT_WORKS_STEPS = [
-  {
-    step: "01. Authenticate with Google",
-    title: "Sign In with Google",
-    description:
-      "Connect your Google account in one click to unlock your personal Python workspace and automatic cloud progress sync.",
-  },
-  {
-    step: "02. Interactive Curriculum",
-    title: "Study 24 Structured Modules",
-    description:
-      "Read concise, structured lessons with real-world Python 3 code examples and clear learning objectives across three skill tracks.",
-  },
-  {
-    step: "03. Browser Code Execution",
-    title: "Practice in the Code Lab",
-    description:
-      "Solve hands-on coding exercises in the browser-based Python 3 runtime and verify your output against automated checkpoints.",
-  },
-  {
-    step: "04. Adaptive Mastery",
-    title: "Master with AI & Quizzes",
-    description:
-      "Ask your personal AI Tutor whenever you get stuck and complete adaptive quizzes to track your accuracy and daily streak.",
+    iconBg: "bg-purple-100 dark:bg-purple-950/70",
+    iconColor: "text-purple-600 dark:text-purple-400",
+    title: "Personal AI Tutor",
+    description: "Get step-by-step help and explanations whenever you need it.",
   },
 ];
 
@@ -170,45 +184,51 @@ function HomePage() {
   const getStartedTarget = isAuthenticated ? "/dashboard" : "/login";
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground overflow-x-hidden">
-      {/* 1. Top Navigation Bar (Strict 3-Zone Contract) */}
-      <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] dark:bg-background text-foreground overflow-x-hidden">
+      {/* 1. Top Navigation Bar (Matching Reference Image 1) */}
+      <header className="sticky top-0 z-30 border-b border-border bg-white/95 dark:bg-card/95 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
           <Link to="/" className="whitespace-nowrap shrink-0">
             <NaomiLearnLogo size="md" />
           </Link>
 
           <nav
-            aria-label="Homepage sections"
+            aria-label="Homepage navigation"
             className="hidden md:flex items-center gap-7 text-sm font-semibold text-muted-foreground"
           >
             <a
-              href="#features"
-              className="transition-colors hover:text-primary hover:underline underline-offset-4 whitespace-nowrap shrink-0"
+              href="#"
+              className="text-foreground transition-colors hover:text-primary whitespace-nowrap"
             >
+              Home
+            </a>
+            <a href="#features" className="transition-colors hover:text-primary whitespace-nowrap">
               Features
             </a>
-            <a
-              href="#tracks"
-              className="transition-colors hover:text-primary hover:underline underline-offset-4 whitespace-nowrap shrink-0"
-            >
-              Course Tracks
+            <a href="#tracks" className="transition-colors hover:text-primary whitespace-nowrap">
+              How It Works
             </a>
             <a
               href="#progress-preview"
-              className="transition-colors hover:text-primary hover:underline underline-offset-4 whitespace-nowrap shrink-0"
+              className="transition-colors hover:text-primary whitespace-nowrap"
             >
-              Progress Preview
+              For Students
             </a>
-            <a
-              href="#how-it-works"
-              className="transition-colors hover:text-primary hover:underline underline-offset-4 whitespace-nowrap shrink-0"
-            >
-              How It Works
+            <a href="#tracks" className="transition-colors hover:text-primary whitespace-nowrap">
+              About
             </a>
           </nav>
 
           <div className="flex items-center gap-3 shrink-0">
+            {/* Theme Toggle Icon Preview */}
+            <div
+              className="hidden sm:flex items-center justify-center h-9 w-9 rounded-xl border border-border bg-secondary/50 text-muted-foreground transition-colors"
+              title="Theme Toggle"
+            >
+              <Sun className="h-4 w-4 dark:hidden" />
+              <Moon className="h-4 w-4 hidden dark:block" />
+            </div>
+
             <Link
               to={getStartedTarget}
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs sm:text-sm font-bold text-primary-foreground shadow-2xs transition-all duration-150 hover:-translate-y-0.5 hover:bg-accent whitespace-nowrap shrink-0"
@@ -220,90 +240,74 @@ function HomePage() {
         </div>
       </header>
 
-      <main className="flex-1">
-        {/* 2. Hero Section — Balanced Responsive Two-Column Layout on Desktop, Clean Stack on Mobile/Tablet */}
-        <section className="relative overflow-hidden border-b border-border bg-hero-python bg-grid-python py-10 sm:py-16 lg:py-22">
+      <main className="flex-1 space-y-12 sm:space-y-16 pb-12 sm:pb-16">
+        {/* 2. Hero Section (Matching Reference Image 1) */}
+        <section className="relative overflow-hidden pt-8 sm:pt-12 lg:pt-16 pb-6 sm:pb-8">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-12 lg:gap-12">
-              {/* Left Column: Headline, Supporting Copy & Primary CTA */}
-              <div className="lg:col-span-6 space-y-5 sm:space-y-6 animate-fade-up">
-                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-primary">
-                  <span>NaomiLearn Python &amp; AI Academy</span>
-                  <span aria-hidden="true">·</span>
-                  <span className="text-muted-foreground">24 Interactive Modules</span>
+            <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
+              {/* Left Column: Pill, Two-tone Headline, Subtext, CTAs, 3 Mini Badges */}
+              <div className="lg:col-span-6 space-y-6">
+                {/* Pill Badge */}
+                <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50/80 px-3.5 py-1 text-xs font-semibold text-primary dark:border-blue-900/50 dark:bg-blue-950/50">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  <span>Your Journey to Python &amp; AI Starts Here</span>
                 </div>
 
-                <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-[3.35rem] lg:leading-[1.12]">
-                  <span className="text-primary">Learn Python.</span> Build your future.
+                {/* Two-Tone Headline */}
+                <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl leading-[1.12]">
+                  <span className="block text-foreground">Learn Python.</span>
+                  <span className="block text-primary">Build your future.</span>
                 </h1>
 
-                <div className="space-y-2 max-w-xl">
-                  <p className="text-lg sm:text-xl font-bold text-foreground">
-                    Learn Python with your personal AI tutor.
-                  </p>
-                  <p className="text-sm sm:text-base leading-relaxed text-muted-foreground">
-                    Master 24 structured modules from foundational syntax to AI systems, execute
-                    real Python 3 code directly in your browser, and validate every concept with
-                    adaptive quizzes.
-                  </p>
-                </div>
+                {/* Supporting Copy */}
+                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl">
+                  Learn Python with your personal AI tutor. Master real skills through interactive
+                  lessons, hands-on projects, and adaptive practice.
+                </p>
 
-                <div className="flex flex-wrap items-center gap-4 pt-1">
+                {/* Action Buttons */}
+                <div className="flex flex-wrap items-center gap-3.5 pt-1">
                   <Link
                     to={getStartedTarget}
-                    className="inline-flex items-center gap-2.5 rounded-xl bg-primary px-6 py-3.5 text-sm sm:text-base font-bold text-primary-foreground shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-accent hover:shadow-md whitespace-nowrap shrink-0"
+                    className="inline-flex items-center gap-2.5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-accent hover:shadow-md whitespace-nowrap"
                   >
-                    <span>Get Started</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white p-0.5">
+                      <GoogleIcon className="h-3.5 w-3.5" />
+                    </span>
+                    <span>Get Started with Google</span>
                     <ArrowRight className="h-4 w-4 shrink-0" />
                   </Link>
+
                   <a
                     href="#tracks"
-                    className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-bold text-foreground transition-colors hover:text-primary whitespace-nowrap shrink-0"
+                    className="inline-flex items-center gap-2 rounded-xl border border-border bg-white dark:bg-card px-5 py-3 text-sm font-bold text-foreground shadow-2xs transition-all duration-150 hover:bg-secondary whitespace-nowrap"
                   >
-                    <span>Explore Course Tracks</span>
-                    <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+                    <BookOpen className="h-4 w-4 text-primary shrink-0" />
+                    <span>Explore Courses</span>
                   </a>
                 </div>
 
-                {/* Key Platform Metrics */}
-                <div className="grid grid-cols-3 gap-4 border-t border-border pt-6 max-w-lg">
-                  <div>
-                    <div className="font-mono text-xl sm:text-2xl font-extrabold text-primary tabular-nums">
-                      24
-                    </div>
-                    <div className="text-xs font-medium text-muted-foreground">
-                      Hands-On Modules
-                    </div>
+                {/* Three Mini Pill Badges */}
+                <div className="flex flex-wrap items-center gap-2.5 pt-2 text-xs font-semibold">
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200/70 bg-indigo-50/80 px-3 py-1 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/50 dark:text-indigo-300">
+                    <Terminal className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                    <span>Hands-on Practice</span>
                   </div>
-                  <div>
-                    <div className="font-mono text-xl sm:text-2xl font-extrabold text-foreground tabular-nums">
-                      Python 3
-                    </div>
-                    <div className="text-xs font-medium text-muted-foreground">
-                      Browser Code Lab
-                    </div>
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-purple-200/70 bg-purple-50/80 px-3 py-1 text-purple-700 dark:border-purple-900/50 dark:bg-purple-950/50 dark:text-purple-300">
+                    <Sparkles className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                    <span>AI-Powered Learning</span>
                   </div>
-                  <div>
-                    <div className="font-mono text-xl sm:text-2xl font-extrabold text-gold tabular-nums">
-                      24/7
-                    </div>
-                    <div className="text-xs font-medium text-muted-foreground">
-                      Personal AI Tutor
-                    </div>
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-sky-200/70 bg-sky-50/80 px-3 py-1 text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/50 dark:text-sky-300">
+                    <TrendingUp className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+                    <span>Track Your Progress</span>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Harmonious Responsive Hero Artwork Container (Visible on Desktop, Tablet & Mobile) */}
-              <div className="lg:col-span-6 w-full flex justify-center lg:justify-end">
-                <div className="relative w-full max-w-xl lg:max-w-[560px]">
-                  {/* Soft Python-Blue & Warm Gold Ambient Spotlight Behind Visual */}
-                  <div
-                    aria-hidden="true"
-                    className="hero-spotlight pointer-events-none absolute -inset-3 sm:-inset-5 rounded-3xl bg-gradient-to-tr from-[#306998]/20 via-sky-400/12 to-[#FFD43B]/20 blur-2xl"
-                  />
-
-                  <figure className="relative z-10 overflow-hidden rounded-2xl sm:rounded-3xl border border-primary/20 bg-card p-2 sm:p-2.5 shadow-lg ring-1 ring-primary/10">
+              {/* Right Column: Hero Artwork */}
+              <div className="lg:col-span-6 flex justify-center lg:justify-end">
+                <div className="relative w-full max-w-lg lg:max-w-xl">
+                  <div className="overflow-hidden rounded-3xl border border-border/80 bg-white dark:bg-card p-2 shadow-md">
                     {!heroImgError ? (
                       <img
                         src={HERO_IMAGE_PATH}
@@ -314,360 +318,227 @@ function HomePage() {
                         decoding="async"
                         referrerPolicy="no-referrer"
                         onError={() => setHeroImgError(true)}
-                        className="block w-full h-auto aspect-[16/10] max-h-[250px] sm:max-h-[340px] lg:max-h-[400px] rounded-xl sm:rounded-2xl object-cover object-center transition-transform duration-300 hover:scale-[1.01]"
+                        className="block w-full h-auto aspect-[16/10] rounded-2xl object-cover object-center"
                       />
                     ) : (
-                      <div className="aspect-[16/10] w-full flex flex-col items-center justify-center rounded-xl sm:rounded-2xl bg-[#0F172A] p-8 text-center text-white">
+                      <div className="aspect-[16/10] w-full flex flex-col items-center justify-center rounded-2xl bg-[#0F172A] p-8 text-center text-white">
                         <Terminal className="h-10 w-10 text-sky-300 mb-2" />
                         <div className="font-bold">NaomiLearn — Python &amp; AI Academy</div>
                       </div>
                     )}
-                  </figure>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 3. Concise Introduction to NaomiLearn */}
-        <section className="border-b border-border bg-card py-14 sm:py-16">
-          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8 space-y-4">
-            <div className="text-xs font-bold text-primary">
-              Designed for Clarity &amp; Real Execution
-            </div>
-            <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-              A focused, distraction-free environment to master Python from first print statement to
-              AI systems
-            </h2>
-            <p className="mx-auto max-w-2xl text-sm sm:text-base leading-relaxed text-muted-foreground">
-              NaomiLearn combines a structured 24-module Python curriculum, an in-browser Python 3
-              execution lab, adaptive topic quizzes, and a Socratic Gemini AI tutor—all unified
-              under a single Google account.
-            </p>
-          </div>
-        </section>
-
-        {/* 4. Feature Sections (Lessons, Code Lab, Quizzes, AI Tutor) */}
-        <section id="features" className="scroll-mt-16 border-b border-border py-16 sm:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
-            <div className="max-w-2xl space-y-3">
-              <div className="text-xs font-bold text-primary">Platform Capabilities</div>
-              <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-                Everything you need to learn, run, test, and debug Python in one place
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Every lesson connects directly to hands-on code execution, automated verification,
-                and personalized AI coaching.
-              </p>
-            </div>
-
-            {/* 4 Feature Pillar Cards with Lift-on-Hover & Specific Feature Links */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {/* 3. Platform Capabilities (4 Cards in a Row - Matching Reference Image 1) */}
+        <section id="features" className="scroll-mt-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {CORE_FEATURES.map((feat) => (
                 <div
                   key={feat.title}
-                  className="group flex flex-col justify-between rounded-2xl border border-border bg-card p-6 shadow-2xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md"
+                  className="rounded-2xl border border-border bg-white dark:bg-card p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md flex items-start gap-4"
                 >
-                  <div className="space-y-4">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                      <feat.icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="text-base font-extrabold tracking-tight text-foreground">
-                      {feat.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
+                  <div
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${feat.iconBg} ${feat.iconColor}`}
+                  >
+                    <feat.icon className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-extrabold text-foreground">{feat.title}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       {feat.description}
                     </p>
-                  </div>
-                  <div className="mt-6 pt-4 border-t border-border">
-                    <Link
-                      to={feat.targetRoute}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-primary group-hover:underline whitespace-nowrap"
-                    >
-                      <span>{feat.actionLabel}</span>
-                      <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                    </Link>
                   </div>
                 </div>
               ))}
             </div>
-
-            {/* Visual Deep-Dive: Code Lab + AI Tutor Illustrations */}
-            <div className="grid gap-8 lg:grid-cols-2 pt-2">
-              <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-2xs transition-all duration-200 hover:-translate-y-1 hover:shadow-md space-y-5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-primary">Interactive Python 3 Code Lab</span>
-                  <span className="font-mono text-muted-foreground">
-                    Pyodide + Python 3 Runtime
-                  </span>
-                </div>
-                <CodeLabIllustration className="w-full rounded-2xl border border-border" />
-                <div className="space-y-2">
-                  <h3 className="text-lg font-extrabold text-foreground">
-                    Execute real Python 3 code with instant verification
-                  </h3>
-                  <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
-                    Practice every concept in an interactive editor with starter templates,
-                    progressive hints, stdout inspection, and automated test verification.
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-2xs transition-all duration-200 hover:-translate-y-1 hover:shadow-md space-y-5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-primary">Personal AI Python Tutor</span>
-                  <span className="font-mono text-muted-foreground">
-                    Socratic Coaching &amp; Code Review
-                  </span>
-                </div>
-                <AiTutorIllustration className="w-full rounded-2xl border border-border" />
-                <div className="space-y-2">
-                  <h3 className="text-lg font-extrabold text-foreground">
-                    Guided explanations adapted to your exact skill level
-                  </h3>
-                  <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
-                    Naomi understands your active module and progress—offering step-by-step hints,
-                    line-by-line code breakdowns with copyable snippets, and custom practice
-                    challenges.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
-        {/* 5. Beginner, Intermediate, and Advanced Course-Track Cards */}
-        <section
-          id="tracks"
-          className="scroll-mt-16 border-b border-border bg-card/60 py-16 sm:py-20"
-        >
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
-            <div className="max-w-2xl space-y-2.5">
-              <div className="text-xs font-bold text-primary">Structured 24-Module Syllabus</div>
-              <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-                Three progressive Python tracks from Beginner to Advanced AI
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Each track includes 8 comprehensive modules with runnable examples, coding
-                checkpoints, and topic quizzes.
-              </p>
+        {/* 4. Curriculum / Course Tracks (Text-First, Clean, No Decorative Images) */}
+        <section id="tracks" className="scroll-mt-20 pt-4">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+            {/* Header Row */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div className="space-y-2 max-w-2xl">
+                <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+                  Three progressive Python tracks
+                  <br />
+                  from Beginner to Advanced AI
+                </h2>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  Choose the track that matches your goals. Each track includes comprehensive
+                  modules with runnable examples, coding checkpoints, and topic quizzes.
+                </p>
+              </div>
+
+              <Link
+                to={isAuthenticated ? "/learn" : "/login"}
+                search={isAuthenticated ? undefined : { redirect: "/learn" }}
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-primary hover:underline whitespace-nowrap shrink-0"
+              >
+                <span>Learn more about our curriculum</span>
+                <ArrowRight className="h-4 w-4 shrink-0" />
+              </Link>
             </div>
 
-            <div className="grid gap-7 lg:grid-cols-3">
-              {TRACK_CARDS.map((track) => {
-                const trackLessons = getLessonsByLevel(track.level);
-
-                return (
-                  <article
-                    key={track.level}
-                    className="group flex flex-col justify-between overflow-hidden rounded-3xl border border-border bg-card shadow-2xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md"
-                  >
-                    <div>
-                      {/* Track Visual Header */}
-                      <div className="relative aspect-[16/9] w-full overflow-hidden border-b border-border bg-slate-900">
-                        <img
-                          src={track.imagePath}
-                          alt={`${track.level} Python track illustration`}
-                          width={800}
-                          height={450}
-                          loading="lazy"
-                          decoding="async"
-                          referrerPolicy="no-referrer"
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/25 to-transparent" />
-                        <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-xs font-mono text-white">
-                          <span className="font-bold">{track.badge}</span>
-                          <span className="font-semibold text-[#FFD43B]">
-                            {trackLessons.length} Modules
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="p-6 space-y-4">
-                        <div className="flex items-center gap-3">
-                          <TrackLevelEmblem level={track.level} className="h-10 w-10 shrink-0" />
-                          <div>
-                            <h3 className="text-lg font-extrabold tracking-tight text-foreground">
-                              {track.level} Track
-                            </h3>
-                            <p className="text-xs font-semibold text-primary">{track.tagline}</p>
-                          </div>
-                        </div>
-
-                        <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
-                          {track.description}
-                        </p>
-
-                        <div className="space-y-2 pt-1">
-                          <div className="text-xs font-bold text-foreground">
-                            Key Learning Outcomes
-                          </div>
-                          <ul className="space-y-1.5 text-xs text-foreground">
-                            {track.outcomes.map((outcome) => (
-                              <li key={outcome} className="flex items-start gap-2">
-                                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                                <span>{outcome}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        {/* Sample Modules Preview */}
-                        <div className="rounded-xl border border-border bg-secondary/35 p-3 space-y-1.5">
-                          <div className="text-[11px] font-bold text-secondary-foreground">
-                            Sample Modules ({trackLessons.length} total):
-                          </div>
-                          <div className="text-xs text-muted-foreground leading-relaxed">
-                            {trackLessons
-                              .slice(0, 4)
-                              .map((m) => `${String(m.number).padStart(2, "0")}. ${m.shortTitle}`)
-                              .join(" · ")}{" "}
-                            · +{trackLessons.length - 4} more
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="border-t border-border p-6 pt-4">
-                      <Link
-                        to="/learn"
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-secondary/70 px-4 py-2.5 text-xs sm:text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground whitespace-nowrap"
+            {/* 3 Text-First Course Track Cards (Equal Heights, No Large Decorative Images) */}
+            <div className="grid gap-6 lg:grid-cols-3 items-stretch">
+              {TRACK_CARDS.map((track) => (
+                <article
+                  key={track.level}
+                  className="rounded-3xl border border-border bg-white dark:bg-card p-6 sm:p-7 shadow-xs hover:border-primary/40 hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full space-y-6"
+                >
+                  <div className="space-y-5">
+                    {/* Header Row: Relevant Small Icon + Track Name & Subtitle */}
+                    <div className="flex items-center gap-3.5">
+                      <div
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${track.iconBg} ${track.iconColor}`}
                       >
-                        <span>Explore {track.level} Track</span>
-                        <ArrowRight className="h-4 w-4 shrink-0" />
-                      </Link>
+                        <track.icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-extrabold tracking-tight text-foreground">
+                          {track.title}
+                        </h3>
+                        <p className="text-xs font-semibold text-primary">{track.tagline}</p>
+                      </div>
                     </div>
-                  </article>
-                );
-              })}
+
+                    <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
+                      {track.description}
+                    </p>
+
+                    {/* Key Learning Outcomes */}
+                    <div className="space-y-2 pt-1 border-t border-border/60">
+                      <div className="text-xs font-bold text-foreground">Key Learning Outcomes</div>
+                      <ul className="space-y-2 text-xs text-foreground">
+                        {track.outcomes.map((outcome) => (
+                          <li key={outcome} className="flex items-start gap-2">
+                            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                            <span className="leading-tight">{outcome}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Featured Topics */}
+                    <div className="rounded-xl border border-border/80 bg-secondary/35 p-3 space-y-1.5">
+                      <div className="text-[11px] font-bold text-secondary-foreground">
+                        Featured Topics:
+                      </div>
+                      <div className="text-xs text-muted-foreground leading-relaxed">
+                        {track.featuredTopics.join(" · ")}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Explore Track Action */}
+                  <div className="pt-2">
+                    <Link
+                      to={isAuthenticated ? "/learn" : "/login"}
+                      search={isAuthenticated ? undefined : { redirect: "/learn" }}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/25 bg-secondary/70 px-4 py-3 text-xs sm:text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-white whitespace-nowrap"
+                    >
+                      <span>Explore {track.level} Track</span>
+                      <ArrowRight className="h-4 w-4 shrink-0" />
+                    </Link>
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* 6. Dashboard / Learning-Progress Preview */}
-        <section
-          id="progress-preview"
-          className="scroll-mt-16 border-b border-border py-16 sm:py-20"
-        >
+        {/* 5. Track Your Progress and Stay Motivated (Matching Reference Image 1) */}
+        <section id="progress-preview" className="scroll-mt-20 pt-4">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid items-center gap-10 lg:grid-cols-12">
+              {/* Left Column: Heading, Subtext, Open Dashboard CTA */}
               <div className="lg:col-span-5 space-y-5">
-                <div className="text-xs font-bold text-primary">
-                  Student Dashboard &amp; Analytics
-                </div>
-                <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-                  Track your daily streak, quiz accuracy, and module mastery in real time
+                <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+                  Track your progress and stay motivated
                 </h2>
-                <p className="text-sm sm:text-base leading-relaxed text-muted-foreground">
-                  Your NaomiLearn dashboard automatically records completed lessons, Code Lab
-                  exercises, and quiz scores—highlighting your strongest Python topics and
-                  recommending what to study next.
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  See your learning streak, quiz accuracy, and module completion—all in one place.
                 </p>
 
-                <ul className="space-y-3 text-xs sm:text-sm text-foreground">
-                  <li className="flex items-start gap-2.5">
-                    <Flame className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                    <span>
-                      <strong>Daily Streak &amp; Goal Tracking:</strong> Stay consistent with
-                      customizable daily learning targets.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    <span>
-                      <strong>Topic Accuracy Breakdown:</strong> Identify strong modules and focus
-                      areas across all 24 lessons.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <Award className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                    <span>
-                      <strong>Cloud-Synced via Google:</strong> Pick up right where you left off on
-                      any device.
-                    </span>
-                  </li>
-                </ul>
-
-                <div className="pt-2">
+                <div className="pt-1">
                   <Link
-                    to="/dashboard"
-                    className="inline-flex items-center gap-2 rounded-xl border border-primary/30 bg-secondary px-5 py-3 text-xs sm:text-sm font-bold text-primary transition-all duration-150 hover:bg-primary hover:text-primary-foreground whitespace-nowrap"
+                    to={isAuthenticated ? "/dashboard" : "/login"}
+                    search={isAuthenticated ? undefined : { redirect: "/dashboard" }}
+                    className="inline-flex items-center gap-2.5 rounded-xl border border-primary/25 bg-secondary/70 px-5 py-3 text-xs sm:text-sm font-bold text-primary transition-all duration-150 hover:bg-primary hover:text-white whitespace-nowrap"
                   >
+                    <UserCheck className="h-4 w-4 shrink-0" />
                     <span>Open Student Dashboard</span>
                     <ArrowRight className="h-4 w-4 shrink-0" />
                   </Link>
                 </div>
               </div>
 
-              {/* Interactive Dashboard Preview Card */}
+              {/* Right Column: Student Progress Snapshot Card with Sample Preview */}
               <div className="lg:col-span-7">
-                <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-sm space-y-5">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-4">
-                    <div>
-                      <div className="text-xs font-bold text-primary">
-                        Student Progress Snapshot
-                      </div>
-                      <div className="text-base font-extrabold text-foreground">
-                        Python &amp; AI Mastery Overview
-                      </div>
+                <div className="rounded-3xl border border-border bg-white dark:bg-card p-6 sm:p-7 shadow-xs space-y-5">
+                  <div className="flex items-center justify-between border-b border-border pb-4">
+                    <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                      <BarChart3 className="h-4 w-4 text-primary" />
+                      <span>Student Progress Snapshot</span>
                     </div>
-                    <span className="font-mono text-xs font-bold text-primary tabular-nums">
-                      {CURRICULUM_LESSONS.length} Curriculum Modules
+                    <span className="rounded-full bg-blue-50 dark:bg-blue-950/60 px-3 py-1 text-[11px] font-semibold text-primary">
+                      Sample Preview
                     </span>
                   </div>
 
+                  {/* 3 Metric Boxes */}
                   <div className="grid gap-3.5 sm:grid-cols-3">
                     <div className="rounded-2xl border border-border bg-secondary/35 p-4">
                       <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                        <Flame className="h-4 w-4 text-gold" />
-                        Learning Streak
+                        <Flame className="h-4 w-4 text-[#FFD43B]" />
+                        <span>Learning Streak</span>
                       </div>
                       <div className="mt-1.5 font-mono text-2xl font-extrabold text-foreground tabular-nums">
                         7 Days
                       </div>
-                      <div className="mt-0.5 text-[11px] text-muted-foreground">
-                        Daily target active
-                      </div>
+                      <div className="mt-0.5 text-[11px] text-muted-foreground">Keep going!</div>
                     </div>
 
                     <div className="rounded-2xl border border-border bg-secondary/35 p-4">
                       <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                        <TrendingUp className="h-4 w-4 text-success" />
-                        Quiz Accuracy
+                        <TrendingUp className="h-4 w-4 text-emerald-500" />
+                        <span>Quiz Accuracy</span>
                       </div>
                       <div className="mt-1.5 font-mono text-2xl font-extrabold text-foreground tabular-nums">
                         92%
                       </div>
                       <div className="mt-0.5 text-[11px] text-muted-foreground">
-                        Verified across modules
+                        Across all quizzes
                       </div>
                     </div>
 
                     <div className="rounded-2xl border border-border bg-secondary/35 p-4">
                       <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
                         <Code2 className="h-4 w-4 text-primary" />
-                        Code Lab Runs
+                        <span>Code Lab Runs</span>
                       </div>
                       <div className="mt-1.5 font-mono text-2xl font-extrabold text-foreground tabular-nums">
                         Python 3
                       </div>
                       <div className="mt-0.5 text-[11px] text-muted-foreground">
-                        Automated checkpoints
+                        Practice &amp; build skills
                       </div>
                     </div>
                   </div>
 
-                  {/* Track Progress Bars Preview */}
-                  <div className="space-y-3 rounded-2xl border border-border bg-background p-4">
+                  {/* 3 Track Progress Bars */}
+                  <div className="space-y-3 rounded-2xl border border-border bg-[#f8fafc] dark:bg-background p-4">
                     {[
-                      { label: "Beginner Track (Modules 01–08)", pct: 100, color: "bg-primary" },
-                      {
-                        label: "Intermediate Track (Modules 09–16)",
-                        pct: 65,
-                        color: "bg-[#234E73]",
-                      },
-                      { label: "Advanced Track (Modules 17–24)", pct: 25, color: "bg-[#0F172A]" },
+                      { label: "Beginner Track", pct: 100 },
+                      { label: "Intermediate Track", pct: 65 },
+                      { label: "Advanced Track", pct: 25 },
                     ].map((row) => (
                       <div key={row.label} className="space-y-1">
                         <div className="flex justify-between text-xs">
@@ -677,7 +548,10 @@ function HomePage() {
                           </span>
                         </div>
                         <div className="h-2 overflow-hidden rounded-full bg-secondary">
-                          <div className={`h-full ${row.color}`} style={{ width: `${row.pct}%` }} />
+                          <div
+                            className="h-full bg-primary rounded-full transition-all duration-300"
+                            style={{ width: `${row.pct}%` }}
+                          />
                         </div>
                       </div>
                     ))}
@@ -688,102 +562,53 @@ function HomePage() {
           </div>
         </section>
 
-        {/* 7. How Learning Works */}
-        <section
-          id="how-it-works"
-          className="scroll-mt-16 border-b border-border bg-card/60 py-16 sm:py-20"
-        >
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
-            <div className="max-w-2xl space-y-2.5">
-              <div className="text-xs font-bold text-primary">How Learning Works</div>
-              <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-                Four structured steps from concept to verified Python code
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Every module follows a proven active-learning loop so you retain concepts by writing
-                and testing real programs.
-              </p>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {HOW_IT_WORKS_STEPS.map((item) => (
-                <div
-                  key={item.step}
-                  className="rounded-2xl border border-border bg-card p-6 shadow-2xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md space-y-3"
-                >
-                  <div className="font-mono text-xs font-bold text-primary">{item.step}</div>
-                  <h3 className="text-base font-extrabold text-foreground">{item.title}</h3>
-                  <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
-                    {item.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 8. Final Call-to-Action with Get Started */}
-        <section className="py-16 sm:py-20">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-[#0F172A] px-6 py-12 text-center text-white shadow-xl sm:px-12 sm:py-16">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -top-24 left-1/2 h-64 w-96 -translate-x-1/2 rounded-full bg-primary/35 blur-3xl"
-              />
-              <div className="relative z-10 mx-auto max-w-2xl space-y-5">
+        {/* 6. Dark Call To Action Banner (Matching Reference Image 1) */}
+        <section className="pt-4">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-[#0B1528] px-6 py-8 sm:px-12 sm:py-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="space-y-2 text-center md:text-left">
                 <div className="text-xs font-bold text-sky-300">
                   NaomiLearn · Python &amp; AI Academy
                 </div>
-                <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+                <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
                   Learn Python. Build your future.
                 </h2>
-                <p className="text-sm sm:text-base leading-relaxed text-slate-300">
-                  Learn Python with your personal AI tutor. Sign in with your Google account to
-                  unlock all 24 interactive Python modules, the browser Code Lab, and adaptive
-                  quizzes.
+                <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
+                  Join thousands of learners and start your Python journey today.
                 </p>
-                <div className="pt-2">
-                  <Link
-                    to={getStartedTarget}
-                    className="inline-flex items-center gap-2.5 rounded-xl bg-primary px-7 py-3.5 text-sm sm:text-base font-bold text-white shadow-md transition-all duration-150 hover:-translate-y-0.5 hover:bg-accent whitespace-nowrap"
-                  >
-                    <span>Get Started</span>
-                    <ArrowRight className="h-4 w-4 shrink-0" />
-                  </Link>
-                </div>
+              </div>
+
+              <div className="shrink-0">
+                <Link
+                  to={getStartedTarget}
+                  className="inline-flex items-center gap-2.5 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white shadow-md transition-all duration-150 hover:-translate-y-0.5 hover:bg-accent whitespace-nowrap"
+                >
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white p-0.5">
+                    <GoogleIcon className="h-3.5 w-3.5" />
+                  </span>
+                  <span>Get Started</span>
+                  <ArrowRight className="h-4 w-4 shrink-0" />
+                </Link>
               </div>
             </div>
           </div>
         </section>
       </main>
 
-      {/* 9. Clean Footer */}
-      <footer className="border-t border-border bg-card py-10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 sm:flex-row sm:px-6 lg:px-8">
-          <Link to="/" className="inline-flex items-center shrink-0">
-            <NaomiLearnLogo size="md" />
-          </Link>
-
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-semibold text-muted-foreground">
-            <a href="#features" className="hover:text-primary">
-              Features
-            </a>
-            <a href="#tracks" className="hover:text-primary">
-              Course Tracks
-            </a>
-            <a href="#progress-preview" className="hover:text-primary">
-              Progress Preview
-            </a>
-            <a href="#how-it-works" className="hover:text-primary">
-              How It Works
-            </a>
-            <Link to="/learn" className="hover:text-primary">
-              Curriculum
+      {/* 7. Minimal Clean Footer (Matching Reference Image 1) */}
+      <footer className="border-t border-border bg-white dark:bg-card py-8 pb-28 sm:pb-16">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6 lg:px-8 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <Link to="/" className="inline-flex items-center shrink-0">
+              <NaomiLearnLogo size="md" />
             </Link>
+            <p className="text-xs text-muted-foreground sm:border-l sm:border-border sm:pl-3">
+              Learn Python through hands-on practice and personalized AI guidance.
+            </p>
           </div>
 
-          <p className="text-xs text-muted-foreground" suppressHydrationWarning>
-            &copy; {new Date().getFullYear()} NaomiLearn. All rights reserved.
+          <p className="text-xs text-muted-foreground whitespace-nowrap" suppressHydrationWarning>
+            &copy; 2026 NaomiLearn. All rights reserved.
           </p>
         </div>
       </footer>

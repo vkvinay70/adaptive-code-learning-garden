@@ -134,9 +134,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = useCallback(
     async (redirectPath = "/dashboard"): Promise<{ error: string | null }> => {
       if (!isSupabaseConfigured) {
+        console.warn(
+          "[NaomiLearn Auth] Google Sign-In requires Supabase environment variables (VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY) to be configured in your .env file.",
+        );
         return {
           error:
-            "Google Sign-In requires Supabase environment variables (VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY) to be configured.",
+            "Google sign-in is temporarily unavailable. Please verify your Supabase authentication configuration or try again later.",
         };
       }
 

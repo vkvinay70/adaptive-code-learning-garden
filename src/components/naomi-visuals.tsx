@@ -355,8 +355,8 @@ export function AuthBrandShowcase() {
             Learn Python. Build your future.
           </h2>
           <p className="text-sm leading-relaxed text-slate-300">
-            Work through 24 structured modules from Beginner to Advanced, execute real Python 3 in
-            the browser Code Lab, and receive Socratic coaching from your personal AI Tutor.
+            Work through structured modules from Beginner to Advanced, execute real Python 3 in the
+            browser Code Lab, and receive Socratic coaching from your personal AI Tutor.
           </p>
         </div>
 
@@ -374,7 +374,7 @@ export function AuthBrandShowcase() {
           <div className="rounded-xl border border-white/10 bg-white/5 p-3.5">
             <div className="flex items-center gap-2 font-bold text-sky-200">
               <Code2 className="h-4 w-4 text-sky-300" />
-              24 Hands-On Modules
+              Structured Learning
             </div>
             <p className="mt-1 text-slate-300/80">
               Beginner, Intermediate &amp; Advanced tracks with live checkpoints.
@@ -420,22 +420,22 @@ export function MasteryProgressGraphic({
 }) {
   const tracks = [
     {
-      label: "01. Beginner Foundation",
+      label: "Beginner — Python Fundamentals",
       pct: beginnerPct,
       color: "bg-primary",
-      modules: "Modules 1–8",
+      modules: "Foundation Track",
     },
     {
-      label: "02. Intermediate Engineering",
+      label: "Intermediate — Applied Python Development",
       pct: intermediatePct,
       color: "bg-[#234E73]",
-      modules: "Modules 9–16",
+      modules: "Engineering Track",
     },
     {
-      label: "03. Advanced & AI Systems",
+      label: "Advanced — Advanced Python & AI Engineering",
       pct: advancedPct,
       color: "bg-[#0F172A]",
-      modules: "Modules 17–24",
+      modules: "Production & AI Track",
     },
   ];
 
