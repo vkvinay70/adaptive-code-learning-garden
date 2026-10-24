@@ -45,13 +45,13 @@ export const Route = createFileRoute("/practice")({
   },
   head: () => ({
     meta: [
-      { title: "Python Code Lab — NaomiLearn" },
+      { title: "Python Code Lab — NaomiLearn AI Academy" },
       {
         name: "description",
         content:
-          "Write, edit, and run real Python 3 code in your browser using the NaomiLearn WebAssembly Code Lab. Solve guided exercises with progressive hints and AI code review.",
+          "Write, edit, and run real Python 3 code in your browser using the NaomiLearn AI Academy WebAssembly Code Lab. Solve guided exercises with progressive hints and AI code review.",
       },
-      { property: "og:title", content: "Python Code Lab — NaomiLearn" },
+      { property: "og:title", content: "Python Code Lab — NaomiLearn AI Academy" },
       {
         property: "og:description",
         content:

@@ -25,13 +25,13 @@ import { useAuth } from "@/lib/auth";
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "Account & Learning Settings — NaomiLearn" },
+      { title: "Account & Learning Settings — NaomiLearn AI Academy" },
       {
         name: "description",
         content:
-          "Configure your NaomiLearn student display name, preferred Python track, daily learning goal, and Google cloud sync.",
+          "Configure your NaomiLearn AI Academy student display name, preferred Python track, daily learning goal, and Google cloud sync.",
       },
-      { property: "og:title", content: "Account & Settings — NaomiLearn" },
+      { property: "og:title", content: "Account & Settings — NaomiLearn AI Academy" },
     ],
   }),
   component: SettingsPage,

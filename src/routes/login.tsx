@@ -20,11 +20,11 @@ export const Route = createFileRoute("/login")({
   },
   head: () => ({
     meta: [
-      { title: "Get Started — NaomiLearn Python & AI Academy" },
+      { title: "Student Sign-In — NaomiLearn AI Academy" },
       {
         name: "description",
         content:
-          "Sign in with Google to access NaomiLearn's interactive Python modules, Code Lab, adaptive quizzes, and personal AI Tutor.",
+          "Sign in with Google to access NaomiLearn AI Academy's interactive Python modules, Code Lab, adaptive quizzes, and personal AI Tutor.",
       },
     ],
   }),

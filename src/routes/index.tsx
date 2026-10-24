@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
   BookOpen,
@@ -24,19 +24,19 @@ import { useAuth } from "@/lib/auth";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "NaomiLearn — Python & AI Academy | Learn Python. Build your future." },
+      { title: "NaomiLearn AI Academy — Learn Python & Master AI" },
       {
         name: "description",
         content:
-          "Learn Python. Build your future. Learn Python with your personal AI tutor across structured modules, an in-browser Python 3 Code Lab, and adaptive quizzes.",
+          "NaomiLearn AI Academy: Master Python with your personal Gemini-powered AI tutor across 24 structured modules, an in-browser Python 3 Code Lab, and adaptive quizzes.",
       },
       {
         property: "og:title",
-        content: "NaomiLearn — Python & AI Academy",
+        content: "NaomiLearn AI Academy — Learn Python & Master AI",
       },
       {
         property: "og:description",
-        content: "Learn Python. Build your future. Learn Python with your personal AI tutor.",
+        content: "Learn Python. Master AI. Build your future with NaomiLearn AI Academy.",
       },
     ],
   }),
@@ -178,10 +178,22 @@ const CORE_FEATURES = [
 ];
 
 function HomePage() {
-  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const { isAuthenticated, loading } = useAuth();
   const [heroImgError, setHeroImgError] = useState(false);
 
+  // When an authenticated student visits the root URL '/', automatically route them to their Dashboard
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      void navigate({ to: "/dashboard", replace: true });
+    }
+  }, [loading, isAuthenticated, navigate]);
+
   const getStartedTarget = isAuthenticated ? "/dashboard" : "/login";
+
+  if (!loading && isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] dark:bg-background text-foreground overflow-x-hidden">

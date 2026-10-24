@@ -38,17 +38,17 @@ import { CURRICULUM_LESSONS, type LearningLevel } from "@/lib/curriculum";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Student Dashboard — NaomiLearn" },
+      { title: "Student Dashboard — NaomiLearn AI Academy" },
       {
         name: "description",
         content:
-          "Your NaomiLearn student dashboard: learning streak, daily goal, quiz accuracy, study time, completed lessons, and recommended next module.",
+          "Your NaomiLearn AI Academy student dashboard: learning streak, daily goal, quiz accuracy, study time, completed lessons, and recommended next module.",
       },
-      { property: "og:title", content: "Student Dashboard — NaomiLearn" },
+      { property: "og:title", content: "Student Dashboard — NaomiLearn AI Academy" },
       {
         property: "og:description",
         content:
-          "Track your Python learning streak, accuracy, and curriculum progress on NaomiLearn.",
+          "Track your Python learning streak, accuracy, and curriculum progress on NaomiLearn AI Academy.",
       },
     ],
   }),
@@ -174,7 +174,7 @@ function DashboardPage() {
               </span>
             </div>
             <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-foreground">
-              Welcome back{name ? `, ${name}` : " to NaomiLearn"}
+              Welcome back{name ? `, ${name}` : " to NaomiLearn AI Academy"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Learn Python. Master AI. Build Your Future.

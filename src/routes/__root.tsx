@@ -245,17 +245,17 @@ function ProtectedWorkspaceShell({ normalizedPath }: { normalizedPath: string })
               <SidebarTrigger aria-label="Toggle navigation sidebar" />
               <div className="flex items-center gap-2 text-sm min-w-0">
                 <Link
-                  to="/"
+                  to={isAuthenticated ? "/dashboard" : "/"}
                   className="inline-flex items-center shrink-0 md:hidden"
-                  aria-label="NaomiLearn Home"
+                  aria-label={isAuthenticated ? "Open Dashboard" : "NaomiLearn AI Academy"}
                 >
                   <NaomiLearnLogo size="sm" />
                 </Link>
                 <Link
-                  to="/"
+                  to={isAuthenticated ? "/dashboard" : "/"}
                   className="hidden md:inline font-semibold text-muted-foreground transition-colors hover:text-foreground whitespace-nowrap shrink-0"
                 >
-                  NaomiLearn
+                  NaomiLearn AI Academy
                 </Link>
                 <span aria-hidden="true" className="text-muted-foreground">
                   /
@@ -301,8 +301,9 @@ function PostOAuthRedirectHandler({ normalizedPath }: { normalizedPath: string }
   useEffect(() => {
     if (loading || !isAuthenticated) return;
     const pendingDestination = consumePendingOAuthRedirect();
-    if (pendingDestination && pendingDestination !== normalizedPath) {
-      void navigate({ to: pendingDestination, replace: true });
+    const target = pendingDestination || (normalizedPath === "/" ? "/dashboard" : null);
+    if (target && target !== normalizedPath) {
+      void navigate({ to: target, replace: true });
     }
   }, [loading, isAuthenticated, normalizedPath, navigate]);
 

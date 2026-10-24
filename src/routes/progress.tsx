@@ -34,15 +34,15 @@ import { CURRICULUM_LESSONS, type LearningLevel } from "@/lib/curriculum";
 export const Route = createFileRoute("/progress")({
   head: () => ({
     meta: [
-      { title: "Learning Progress & Analytics — NaomiLearn" },
+      { title: "Learning Progress & Analytics — NaomiLearn AI Academy" },
       {
         name: "description",
         content:
-          "Inspect your Python learning streak, daily goal completion, module accuracy breakdown, completed lessons, and quiz attempt history.",
+          "Inspect your Python learning streak, daily goal completion, module accuracy breakdown, completed lessons, and quiz attempt history at NaomiLearn AI Academy.",
       },
       {
         property: "og:title",
-        content: "Learning Progress & Analytics — NaomiLearn",
+        content: "Learning Progress & Analytics — NaomiLearn AI Academy",
       },
     ],
   }),

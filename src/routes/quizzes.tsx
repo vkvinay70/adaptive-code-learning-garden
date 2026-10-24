@@ -30,13 +30,13 @@ import {
 export const Route = createFileRoute("/quizzes")({
   head: () => ({
     meta: [
-      { title: "Adaptive Python Quizzes — NaomiLearn" },
+      { title: "Adaptive Python Quizzes — NaomiLearn AI Academy" },
       {
         name: "description",
         content:
-          "Test your Python mastery with Beginner, Intermediate, and Advanced topic quizzes. Receive instant feedback, explanations, and review missed questions.",
+          "Test your Python mastery with Beginner, Intermediate, and Advanced topic quizzes at NaomiLearn AI Academy. Receive instant feedback, explanations, and review missed questions.",
       },
-      { property: "og:title", content: "Adaptive Python Quizzes — NaomiLearn" },
+      { property: "og:title", content: "Adaptive Python Quizzes — NaomiLearn AI Academy" },
       {
         property: "og:description",
         content: "Topic-based Python quizzes with instant explanations and score tracking.",

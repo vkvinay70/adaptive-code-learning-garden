@@ -50,13 +50,13 @@ export const Route = createFileRoute("/tutor")({
   },
   head: () => ({
     meta: [
-      { title: "AI Python Tutor Agent — NaomiLearn" },
+      { title: "AI Python Tutor — NaomiLearn AI Academy" },
       {
         name: "description",
         content:
-          "Chat with Naomi, your Gemini-powered AI Python Tutor. Get level-adapted explanations, step-by-step hints, line-by-line code breakdowns, and custom practice exercises.",
+          "Chat with Naomi, your Gemini-powered AI Python Tutor at NaomiLearn AI Academy. Get level-adapted explanations, step-by-step hints, line-by-line code breakdowns, and custom practice exercises.",
       },
-      { property: "og:title", content: "AI Python Tutor Agent — NaomiLearn" },
+      { property: "og:title", content: "AI Python Tutor — NaomiLearn AI Academy" },
       {
         property: "og:description",
         content:
@@ -367,6 +367,21 @@ Teaching Guidelines:
                   </div>
                 ) : (
                   <div className="max-w-[92%] rounded-2xl border border-border bg-background/70 p-4 sm:p-5 space-y-2.5">
+                    <div className="flex items-center justify-between border-b border-border/60 pb-2 text-[11px]">
+                      <div className="flex items-center gap-1.5 font-bold text-foreground">
+                        <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                        <span>Naomi AI Tutor</span>
+                      </div>
+                      {m.text.includes("[Curriculum Knowledge Base (Offline Fallback)]") ? (
+                        <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          Curriculum Fallback
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tight text-primary border border-primary/20">
+                          Gemini 3.8 Flash
+                        </span>
+                      )}
+                    </div>
                     {m.toolsUsed && m.toolsUsed.length > 0 && (
                       <div className="flex flex-wrap items-center gap-2 border-b border-border pb-2 text-[11px] font-semibold text-primary">
                         <Wrench className="h-3.5 w-3.5" />

@@ -41,13 +41,13 @@ export const Route = createFileRoute("/learn")({
   },
   head: () => ({
     meta: [
-      { title: "Learn Python Curriculum — NaomiLearn" },
+      { title: "Learn Python Curriculum — NaomiLearn AI Academy" },
       {
         name: "description",
         content:
-          "Master Python step by step across Beginner, Intermediate, and Advanced tracks with objectives, runnable examples, and hands-on checkpoints.",
+          "Master Python step by step across Beginner, Intermediate, and Advanced tracks with objectives, runnable examples, and hands-on checkpoints at NaomiLearn AI Academy.",
       },
-      { property: "og:title", content: "Learn Python Curriculum — NaomiLearn" },
+      { property: "og:title", content: "Learn Python Curriculum — NaomiLearn AI Academy" },
       {
         property: "og:description",
         content: "24 structured Python modules across Beginner, Intermediate, and Advanced levels.",

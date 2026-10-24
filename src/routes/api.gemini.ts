@@ -1,5 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FunctionDeclaration, GoogleGenAI, Type, type Content } from "@google/genai";
+import {
+  FunctionDeclaration,
+  GoogleGenAI,
+  Type,
+  type Content,
+  type GenerateContentConfig,
+} from "@google/genai";
 import {
   CURRICULUM_LESSONS,
   CURATED_QUIZ_BANK,
@@ -113,7 +119,7 @@ const agentToolDeclarations: FunctionDeclaration[] = [
   },
 ];
 
-function executeAgentTool(
+export function executeAgentTool(
   name: string,
   args: Record<string, unknown>,
   context: {
@@ -249,7 +255,125 @@ function executeAgentTool(
   }
 }
 
-function buildCurriculumGroundedReply(
+export const DEFAULT_GEMINI_MODEL = "gemini-3.8-flash";
+export const PRIMARY_GEMINI_MODEL = DEFAULT_GEMINI_MODEL;
+export const FALLBACK_GEMINI_MODEL = DEFAULT_GEMINI_MODEL;
+
+export function resolveModelName(envModel?: string): string {
+  const trimmed = envModel?.trim();
+  return trimmed || DEFAULT_GEMINI_MODEL;
+}
+
+export function categorizeGeminiError(err: unknown): {
+  status: number;
+  category: string;
+  userMessage: string;
+  isRetryable: boolean;
+} {
+  const status =
+    typeof err === "object" && err !== null && "status" in err
+      ? Number((err as { status?: unknown }).status)
+      : undefined;
+
+  const rawMsg = err instanceof Error ? err.message : String(err || "");
+  const lower = rawMsg.toLowerCase();
+
+  // 401 / 403 Authentication / Key invalid
+  if (
+    status === 401 ||
+    status === 403 ||
+    lower.includes("api_key_invalid") ||
+    lower.includes("permission_denied") ||
+    lower.includes("unauthenticated")
+  ) {
+    return {
+      status: 401,
+      category: "Authentication Error",
+      userMessage:
+        "AI Tutor authentication failed. Please verify the server GEMINI_API_KEY configuration.",
+      isRetryable: false,
+    };
+  }
+
+  // 429 Rate limit / Quota exhausted
+  if (
+    status === 429 ||
+    lower.includes("resource_exhausted") ||
+    lower.includes("exhausted") ||
+    lower.includes("rate limit") ||
+    lower.includes("quota")
+  ) {
+    return {
+      status: 429,
+      category: "Rate Limit / Quota Exceeded",
+      userMessage: "Gemini API rate limit or quota exceeded. Please wait a moment and try again.",
+      isRetryable: true,
+    };
+  }
+
+  // 503 / 502 High demand / Service unavailable
+  if (
+    status === 503 ||
+    status === 502 ||
+    lower.includes("unavailable") ||
+    lower.includes("high demand") ||
+    lower.includes("overloaded")
+  ) {
+    return {
+      status: 503,
+      category: "High Demand / Service Unavailable",
+      userMessage:
+        "The Gemini model is currently experiencing high demand. Please try again shortly.",
+      isRetryable: true,
+    };
+  }
+
+  // 404 Model Not Found / Unsupported
+  if (
+    status === 404 ||
+    lower.includes("not_found") ||
+    lower.includes("is not found") ||
+    lower.includes("unsupported")
+  ) {
+    return {
+      status: 404,
+      category: "Model Unsupported or Not Found",
+      userMessage:
+        "The configured Gemini model is not supported or not found. Please verify GEMINI_MODEL.",
+      isRetryable: false,
+    };
+  }
+
+  // Network connection failures
+  if (
+    lower.includes("fetch failed") ||
+    lower.includes("enotfound") ||
+    lower.includes("econnrefused") ||
+    lower.includes("network")
+  ) {
+    return {
+      status: 503,
+      category: "Network Connection Issue",
+      userMessage: "Unable to reach Gemini API servers due to a network connection issue.",
+      isRetryable: true,
+    };
+  }
+
+  return {
+    status: status || 500,
+    category: "General Service Error",
+    userMessage: "Unable to process the AI Tutor request right now. Please try again.",
+    isRetryable: false,
+  };
+}
+
+export function isRetryableModelError(err: unknown): boolean {
+  return categorizeGeminiError(err).isRetryable;
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export function buildCurriculumGroundedReply(
   userQuery: string,
   level?: string,
   module?: string,
@@ -372,7 +496,7 @@ export const Route = createFileRoute("/api/gemini")({
             return Response.json(fallback);
           }
 
-          const configuredModel = process.env.GEMINI_MODEL?.trim() || "gemini-3.8-flash";
+          const activeModel = resolveModelName(process.env.GEMINI_MODEL);
 
           const ai = new GoogleGenAI({
             apiKey,
@@ -390,12 +514,37 @@ export const Route = createFileRoute("/api/gemini")({
             }),
           );
 
+          // Bounded retry helper function for model calls (handles temporary 503/429 with backoff & verified fallback)
+          async function generateWithBoundedRetry(
+            promptContents: Content[],
+            generateConfig: GenerateContentConfig,
+          ) {
+            try {
+              return await ai.models.generateContent({
+                model: activeModel,
+                contents: promptContents,
+                config: generateConfig,
+              });
+            } catch (firstErr) {
+              if (!isRetryableModelError(firstErr)) {
+                throw firstErr;
+              }
+              // Wait 800ms before attempting secondary model or retry
+              await sleep(800);
+              const retryModel =
+                activeModel !== FALLBACK_GEMINI_MODEL ? FALLBACK_GEMINI_MODEL : activeModel;
+              return await ai.models.generateContent({
+                model: retryModel,
+                contents: promptContents,
+                config: generateConfig,
+              });
+            }
+          }
+
           // Structured JSON generation path (e.g. for AI Quiz generation)
           if (json) {
-            const response = await ai.models.generateContent({
-              model: configuredModel,
-              contents,
-              config: {
+            try {
+              const response = await generateWithBoundedRetry(contents, {
                 systemInstruction: system.slice(0, 12000),
                 responseMimeType: "application/json",
                 responseSchema: {
@@ -420,30 +569,51 @@ export const Route = createFileRoute("/api/gemini")({
                   },
                   required: ["questions"],
                 },
-              },
-            });
+              });
 
-            const text = response.text;
-            if (!text) {
+              const text = response.text;
+              if (!text) {
+                return Response.json(
+                  {
+                    error:
+                      "AI Quiz generator is temporarily experiencing high model demand. Please use our curated topic quizzes.",
+                  },
+                  { status: 503 },
+                );
+              }
+              return Response.json({ text });
+            } catch {
               return Response.json(
-                { error: "Gemini returned an empty quiz response." },
-                { status: 502 },
+                {
+                  error:
+                    "AI Quiz generator is temporarily experiencing high model demand. Please use our curated topic quizzes.",
+                },
+                { status: 503 },
               );
             }
-            return Response.json({ text });
           }
 
           // Conversational AI Tutor Agent with safe application tool calling
           const toolsUsed: string[] = [];
 
-          let response = await ai.models.generateContent({
-            model: configuredModel,
-            contents,
-            config: {
+          let response;
+          try {
+            response = await generateWithBoundedRetry(contents, {
               systemInstruction: system.slice(0, 12000),
               tools: [{ functionDeclarations: agentToolDeclarations }],
-            },
-          });
+            });
+          } catch (liveErr) {
+            console.warn(
+              "[NaomiLearn AI Tutor] Live model generation failed; falling back to curriculum knowledge base.",
+              liveErr instanceof Error ? liveErr.message : liveErr,
+            );
+            const fallback = buildCurriculumGroundedReply(lastUserMessage, level, module);
+            return Response.json({
+              text: `> ℹ️ **Curriculum Reference Mode:** *Live AI generation is temporarily at capacity. Here is the verified lesson guide from NaomiLearn's curriculum:* \n\n${fallback.text}`,
+              toolsUsed: fallback.toolsUsed,
+              fallback: true,
+            });
+          }
 
           // Handle up to 2 rounds of safe function calls if the model invokes agent tools
           let rounds = 0;
@@ -476,20 +646,24 @@ export const Route = createFileRoute("/api/gemini")({
               parts: toolResponseParts,
             });
 
-            response = await ai.models.generateContent({
-              model: configuredModel,
-              contents,
-              config: {
+            try {
+              response = await generateWithBoundedRetry(contents, {
                 systemInstruction: system.slice(0, 12000),
                 tools: [{ functionDeclarations: agentToolDeclarations }],
-              },
-            });
+              });
+            } catch {
+              break;
+            }
           }
 
           const text = response.text;
           if (!text) {
             const fallback = buildCurriculumGroundedReply(lastUserMessage, level, module);
-            return Response.json(fallback);
+            return Response.json({
+              text: `> ℹ️ **Curriculum Reference Mode:** *Live AI generation is temporarily at capacity. Here is the verified lesson guide from NaomiLearn's curriculum:* \n\n${fallback.text}`,
+              toolsUsed: fallback.toolsUsed,
+              fallback: true,
+            });
           }
 
           return Response.json({
@@ -497,17 +671,11 @@ export const Route = createFileRoute("/api/gemini")({
             toolsUsed: Array.from(new Set(toolsUsed)),
           });
         } catch (err: unknown) {
-          const errStatus =
-            typeof err === "object" && err !== null && "status" in err
-              ? (err as { status?: number }).status
-              : undefined;
-          const status = errStatus === 429 ? 429 : 502;
-          const message =
-            status === 429
-              ? "AI Tutor rate limit reached. Please wait a moment and try again."
-              : err instanceof Error && err.message
-                ? `AI Tutor error: ${err.message}`
-                : "Unable to process the AI Tutor request right now.";
+          const isRateLimit = isRetryableModelError(err);
+          const status = isRateLimit ? 503 : 502;
+          const message = isRateLimit
+            ? "AI Tutor is currently experiencing high demand. Please try your question again in a few moments."
+            : "Unable to process the AI Tutor request right now. Please try again.";
           return Response.json({ error: message }, { status });
         }
       },
